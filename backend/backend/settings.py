@@ -93,7 +93,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Use SQLite for development (fallback if PostgreSQL unavailable)
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
