@@ -1,0 +1,36 @@
+---
+import type { EventView } from "../../types";
+import { formatEventDate } from "../../lib/format";
+
+interface Props {
+  event: EventView;
+}
+
+const { event } = Astro.props;
+---
+
+<article class="group card-hover">
+  <a href={`/events/${event.id}`} class="block">
+    <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
+      <img
+        src={event.image}
+        alt={event.title}
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+      {
+        event.status === "ongoing" && (
+          <span class="absolute left-3 top-3 rounded-full bg-fire-500 px-3 py-1 text-xs font-semibold text-white">
+            Ongoing
+          </span>
+        )
+      }
+    </div>
+    <div class="mt-5 space-y-2">
+      <p class="text-sm text-muted-foreground">{formatEventDate(event.date)}</p>
+      <h3 class="font-display text-xl text-foreground group-hover:text-primary">
+        {event.title}
+      </h3>
+      <p class="text-sm text-muted-foreground">{event.location}</p>
+    </div>
+  </a>
+</article>

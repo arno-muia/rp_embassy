@@ -1,0 +1,60 @@
+---
+import type { SiteConfig } from "../../lib/api";
+
+interface Props {
+  faqs: NonNullable<SiteConfig["visitFaqs"]>;
+}
+
+const { faqs } = Astro.props;
+const ids = faqs.map((_, i) => `faq-${i}`);
+---
+
+<div class="space-y-3">
+  {
+    faqs.map((faq, i) => (
+      <div class="glass-frost overflow-hidden rounded-xl">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-4 px-6 py-4 text-left"
+          aria-expanded="false"
+          data-faq-toggle
+          data-target={ids[i]}
+        >
+          <span class="font-semibold text-foreground">{faq.question}</span>
+          <span
+            class="shrink-0 text-primary transition-transform duration-300"
+            data-faq-icon
+          >
+            ▾
+          </span>
+        </button>
+        <div id={ids[i]} class="hidden border-t border-border px-6 pb-4 pt-2">
+          <p class="text-sm text-muted-foreground">{faq.answer}</p>
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-faq-toggle]").forEach(
+    (btn) => {
+      btn.addEventListener("click", () => {
+        const target = document.getElementById(
+          btn.dataset.target as string,
+        );
+        const icon = btn.querySelector("[data-faq-icon]");
+        const open = target?.classList.contains("hidden") === false;
+        if (open) {
+          target?.classList.add("hidden");
+          btn.setAttribute("aria-expanded", "false");
+          icon?.classList.remove("rotate-180");
+        } else {
+          target?.classList.remove("hidden");
+          btn.setAttribute("aria-expanded", "true");
+          icon?.classList.add("rotate-180");
+        }
+      });
+    },
+  );
+</script>

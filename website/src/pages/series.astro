@@ -1,0 +1,32 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import SeriesCard from "../components/content/SeriesCard.astro";
+import { getSeries } from "../lib/api";
+
+const series = await getSeries();
+---
+
+<Layout title="Sermon Series" description="Browse sermon series from Royal Priesthood Embassy.">
+  <PageHero
+    title="Sermon Series"
+    subtitle="Explore teaching collections organized by theme and topic."
+    register="parchment"
+  />
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      {
+        series.length > 0 ? (
+          <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {series.map((s) => (
+              <SeriesCard series={s} />
+            ))}
+          </div>
+        ) : (
+          <p class="text-muted-foreground">No series available yet.</p>
+        )
+      }
+    </div>
+  </section>
+</Layout>

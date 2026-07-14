@@ -1,0 +1,52 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import SermonCard from "../components/content/SermonCard.astro";
+import { getSermons, getSeries } from "../lib/api";
+
+const sermons = await getSermons();
+const series = await getSeries();
+---
+
+<Layout title="Sermons" description="Watch and listen to teachings from Royal Priesthood Embassy.">
+  <PageHero
+    title="Sermon Library"
+    subtitle="Teaching that equips you to walk in your royal identity and daily Kingdom influence."
+    register="parchment"
+  />
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <h2 class="font-display text-2xl text-foreground">Browse by Series</h2>
+      <div class="mt-6 flex flex-wrap gap-3">
+        {
+          series.map((s) => (
+            <a
+              href={`/series/${s.slug}`}
+              class="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary hover:bg-primary/8 hover:text-primary"
+            >
+              {s.title}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="register-parchment section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <h2 class="font-display text-2xl text-foreground">All Sermons</h2>
+      {
+        sermons.length > 0 ? (
+          <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {sermons.map((sermon) => (
+              <SermonCard sermon={sermon} />
+            ))}
+          </div>
+        ) : (
+          <p class="mt-6 text-muted-foreground">No sermons available yet.</p>
+        )
+      }
+    </div>
+  </section>
+</Layout>

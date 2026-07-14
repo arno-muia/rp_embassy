@@ -1,0 +1,186 @@
+---
+import { navLinks, site } from "../../lib/site";
+
+const primaryNav = navLinks.primary.filter((l) => l.label !== "Academy");
+---
+
+<header
+  id="site-header"
+  class="fixed inset-x-0 top-0 z-50 bg-gold-500 transition-[background-color,box-shadow] duration-300"
+>
+  <div
+    class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8"
+  >
+    <a
+      href="/"
+      class="flex shrink-0 items-center transition-transform duration-200 hover:scale-[1.02]"
+    >
+      <img
+        src="/rp-logo.svg"
+        alt={site.name}
+        width="180"
+        height="48"
+        class="h-10 w-auto md:h-11 brightness-0 invert"
+      />
+    </a>
+
+    <nav class="hidden items-center gap-6 lg:flex" aria-label="Main">
+      {
+        primaryNav.map((link) => (
+          <a
+            href={link.href}
+            class="relative text-sm font-medium text-white/90 transition-colors duration-200 hover:text-white"
+            data-nav-link={link.href}
+          >
+            {link.label}
+            <span
+              class="absolute -bottom-1 left-0 hidden h-0.5 w-full bg-white"
+              data-active-underline
+            />
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        aria-expanded="false"
+        aria-label="Open menu"
+        id="menu-toggle"
+        class="group flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-full border border-white/30 text-white"
+      >
+        <span
+          class="h-0.5 w-5 bg-current transition-transform"
+          data-bar="1"
+        ></span>
+        <span
+          class="h-0.5 w-5 bg-current transition-opacity"
+          data-bar="2"
+        ></span>
+        <span
+          class="h-0.5 w-5 bg-current transition-transform"
+          data-bar="3"
+        ></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div
+  id="mobile-menu"
+  class="fixed inset-0 z-40 hidden bg-obsidian-900/95 backdrop-blur-xl"
+  aria-hidden="true"
+>
+  <div class="flex h-full flex-col overflow-y-auto px-6 pb-10 pt-24 md:px-12">
+    <nav class="grid gap-10 lg:grid-cols-2" aria-label="Mobile">
+      <div class="space-y-2">
+        {
+          navLinks.primary.map((link) => (
+            <a
+              href={link.href}
+              class="mobile-link block font-display text-4xl text-ivory-25 transition-opacity hover:text-gold-400 md:text-5xl"
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </div>
+      <div class="space-y-8">
+        <a
+          href="/visit"
+          class="mobile-link inline-flex items-center justify-center rounded-md bg-gradient-to-br from-gold-500 to-bronze-500 px-6 py-3 text-sm font-semibold text-white shadow-gold transition-all hover:-translate-y-0.5"
+        >
+          Plan Your Visit
+        </a>
+        <a
+          href="/login"
+          class="mobile-link text-sm text-ivory-400 hover:text-gold-400"
+        >
+          Sign In →
+        </a>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<script>
+  const header = document.getElementById("site-header");
+  const toggle = document.getElementById("menu-toggle");
+  const menu = document.getElementById("mobile-menu");
+
+  let menuOpen = false;
+
+  function openMenu() {
+    menuOpen = true;
+    menu?.classList.remove("hidden");
+    menu?.setAttribute("aria-hidden", "false");
+    toggle?.setAttribute("aria-expanded", "true");
+    toggle?.setAttribute("aria-label", "Close menu");
+    document.body.style.overflow = "hidden";
+    if (toggle) {
+      toggle
+        .querySelector('[data-bar="1"]')
+        ?.classList.add("translate-y-2", "rotate-45");
+      toggle
+        .querySelector('[data-bar="2"]')
+        ?.classList.add("opacity-0");
+      toggle
+        .querySelector('[data-bar="3"]')
+        ?.classList.add("-translate-y-2", "-rotate-45");
+    }
+  }
+
+  function closeMenu() {
+    menuOpen = false;
+    menu?.classList.add("hidden");
+    menu?.setAttribute("aria-hidden", "true");
+    toggle?.setAttribute("aria-expanded", "false");
+    toggle?.setAttribute("aria-label", "Open menu");
+    document.body.style.overflow = "";
+    if (toggle) {
+      toggle
+        .querySelector('[data-bar="1"]')
+        ?.classList.remove("translate-y-2", "rotate-45");
+      toggle
+        .querySelector('[data-bar="2"]')
+        ?.classList.remove("opacity-0");
+      toggle
+        .querySelector('[data-bar="3"]')
+        ?.classList.remove("-translate-y-2", "-rotate-45");
+    }
+  }
+
+  toggle?.addEventListener("click", () => {
+    menuOpen ? closeMenu() : openMenu();
+  });
+
+  menu?.querySelectorAll(".mobile-link").forEach((l) =>
+    l.addEventListener("click", closeMenu),
+  );
+
+  // Scroll behavior: hide on scroll down, show near top
+  let lastScrollY = window.scrollY;
+  const HERO_THRESHOLD = 100;
+  window.addEventListener(
+    "scroll",
+    () => {
+      const y = window.scrollY;
+      if (y <= 0) header?.classList.remove("-translate-y-20");
+      else if (y > lastScrollY && y > HERO_THRESHOLD)
+        header?.classList.add("-translate-y-20");
+      else header?.classList.remove("-translate-y-20");
+      lastScrollY = y;
+    },
+    { passive: true },
+  );
+
+  // Active link underline
+  const path = window.location.pathname;
+  document.querySelectorAll<HTMLAnchorElement>("[data-nav-link]").forEach((a) => {
+    const href = a.getAttribute("data-nav-link");
+    if (href && (path === href || path.startsWith(href + "/"))) {
+      a.querySelector("[data-active-underline]")?.classList.remove("hidden");
+    }
+  });
+</script>

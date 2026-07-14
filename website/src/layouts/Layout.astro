@@ -1,0 +1,66 @@
+---
+import "../styles/global.css";
+import SiteHeader from "../components/layout/SiteHeader.astro";
+import SiteFooter from "../components/layout/SiteFooter.astro";
+import PageTransition from "../components/motion/PageTransition.astro";
+import { site } from "../lib/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = site.name,
+  description = site.description,
+} = Astro.props;
+
+const fullTitle =
+  title === site.name ? site.name : `${title} | ${site.shortName}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/rp-logo.svg" />
+    
+    <!-- Font loading: Inter + Cinzel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem("rp-theme") || "light";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <SiteHeader />
+    <main id="main-content" class="bg-background pt-20">
+      <PageTransition>
+        <slot />
+      </PageTransition>
+    </main>
+    <SiteFooter />
+    
+    <!-- Motion Initialization -->
+    <script>
+      import { initScrollReveal, initHeroAnimator, initPageTransition } from "../lib/scroll-reveal";
+      document.addEventListener("DOMContentLoaded", () => {
+        initScrollReveal();
+        initHeroAnimator();
+        initPageTransition();
+      });
+    </script>
+  </body>
+</html>

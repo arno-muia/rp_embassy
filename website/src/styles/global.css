@@ -1,0 +1,368 @@
+@import "tailwindcss";
+
+/* ─── Royal Theme — RP Ecosystem Design Guide v3.0 ───────────────────────── */
+
+@theme {
+  /* Gold scale */
+  --color-gold-50: #fff9e8;
+  --color-gold-100: #fdf0c3;
+  --color-gold-200: #f9e08a;
+  --color-gold-300: #f2cc4d;
+  --color-gold-400: #e5b11a;
+  --color-gold-500: #c8882a;
+  --color-gold-600: #b5761c;
+  --color-gold-700: #955d14;
+  --color-gold-800: #71440e;
+  --color-gold-900: #4d2d08;
+
+  /* Bronze scale */
+  --color-bronze-500: #a56a2b;
+  --color-bronze-600: #8a5420;
+  --color-bronze-700: #6f4218;
+  --color-bronze-800: #543112;
+  --color-bronze-900: #3a210c;
+
+  /* Obsidian scale */
+  --color-obsidian-950: #0a0a0a;
+  --color-obsidian-900: #111111;
+  --color-obsidian-800: #1a1a1a;
+  --color-obsidian-700: #242424;
+  --color-obsidian-600: #333333;
+  --color-obsidian-500: #444444;
+
+  /* Ivory scale */
+  --color-ivory-25: #fffefa;
+  --color-ivory-50: #fffcf5;
+  --color-ivory-100: #f9f5ea;
+  --color-ivory-200: #f5edd8;
+  --color-ivory-300: #ece0c4;
+  --color-ivory-400: #d9c9a8;
+
+  /* Fire scale */
+  --color-fire-200: #fad980;
+  --color-fire-300: #f5c84c;
+  --color-fire-400: #f0a920;
+  --color-fire-500: #e5871b;
+  --color-fire-600: #d56b12;
+  --color-fire-700: #b8540e;
+
+  /* Semantic */
+  --color-rp-success: #16a34a;
+  --color-rp-info: #2563eb;
+  --color-rp-warning: #f59e0b;
+  --color-rp-danger: #dc2626;
+
+  /* Theme-aware (light defaults) */
+  --color-background: var(--rp-bg-primary);
+  --color-foreground: var(--rp-text-primary);
+  --color-card: var(--rp-bg-secondary);
+  --color-card-foreground: var(--rp-text-primary);
+  --color-primary: var(--rp-accent-primary);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--rp-bg-tertiary);
+  --color-secondary-foreground: var(--rp-text-primary);
+  --color-muted: var(--rp-bg-tertiary);
+  --color-muted-foreground: var(--rp-text-secondary);
+  --color-accent: var(--rp-bg-tertiary);
+  --color-accent-foreground: var(--rp-text-primary);
+  --color-destructive: var(--rp-danger);
+  --color-border: var(--rp-border-default);
+  --color-input: var(--rp-border-default);
+  --color-ring: var(--rp-border-focus);
+
+  /* Legacy aliases (v4 → v3 migration) */
+  --color-burgundy: #71440e;
+  --color-burgundy-light: #955d14;
+  --color-gold: #c8882a;
+  --color-gold-light: #e5b11a;
+  --color-cream: #fffcf5;
+  --color-charcoal: #111111;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius: 8px;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cinzel), "Cormorant Garamond", Georgia, serif;
+  --font-mono: var(--font-jetbrains), "Fira Code", monospace;
+
+  --shadow-gold: 0 4px 14px rgba(200, 136, 42, 0.25);
+  --shadow-gold-lg: 0 6px 20px rgba(200, 136, 42, 0.35);
+
+  --animate-fade-up: fadeUp 500ms ease-out forwards;
+  --animate-scale-in: scaleIn 300ms ease-out forwards;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-gold-pulse: goldPulse 3s ease-in-out infinite;
+}
+
+/* Light default (Royal Theme — public website) */
+:root,
+[data-theme="light"] {
+  --rp-bg-primary: #faf3ea;
+  --rp-bg-secondary: #faf3ea;
+  --rp-bg-tertiary: #f5edd8;
+  --rp-text-primary: #111111;
+  --rp-text-secondary: #444444;
+  --rp-text-muted: #888888;
+  --rp-border-default: #ece0c4;
+  --rp-border-focus: #c8882a;
+  --rp-accent-primary: #c8882a;
+  --rp-accent-secondary: #a56a2b;
+  --gradient-crown: linear-gradient(135deg, #f9e08a 0%, #c8882a 50%, #8a5420 100%);
+  --gradient-kingdom: linear-gradient(135deg, #f5edd8 0%, #c8882a 100%);
+  --gradient-fire: linear-gradient(135deg, #f9e08a 0%, #e5871b 100%);
+  --gradient-obsidian: linear-gradient(180deg, #1a1a1a 0%, #111111 50%, #0a0a0a 100%);
+  --gradient-page: var(--rp-bg-primary);
+  --rp-glass-bg: rgba(255, 255, 255, 0.78);
+  --rp-glass-border: rgba(236, 224, 196, 0.55);
+  --rp-glass-border-bottom: rgba(236, 224, 196, 0.72);
+  --rp-glass-gold-bg: rgba(200, 136, 42, 0.1);
+  --rp-glass-gold-border: rgba(200, 136, 42, 0.22);
+  --rp-glass-gold-border-bottom: rgba(200, 136, 42, 0.32);
+  --rp-glass-ember-bg: rgba(229, 135, 27, 0.08);
+  --rp-glass-ember-border: rgba(229, 135, 27, 0.18);
+  --rp-glass-ember-border-bottom: rgba(229, 135, 27, 0.28);
+  --rp-shadow-surface: 0 8px 30px rgba(17, 17, 17, 0.08);
+  --shadow-dark: var(--rp-shadow-surface);
+}
+
+[data-theme="dark"] {
+  --rp-bg-primary: #271f14;
+  --rp-bg-secondary: #271f14;
+  --rp-bg-tertiary: #271f14;
+  --rp-text-primary: #fffefa;
+  --rp-text-secondary: #d9c9a8;
+  --rp-text-muted: #666666;
+  --rp-border-default: #333333;
+  --rp-border-focus: #e5b11a;
+  --rp-accent-primary: #e5b11a;
+  --rp-accent-secondary: #d9c9a8;
+  --gradient-page: #271f14;
+  --rp-glass-bg: rgba(17, 17, 17, 0.65);
+  --rp-glass-border: rgba(255, 255, 255, 0.08);
+  --rp-glass-border-bottom: rgba(255, 255, 255, 0.12);
+  --rp-glass-gold-bg: rgba(200, 136, 42, 0.12);
+  --rp-glass-gold-border: rgba(200, 136, 42, 0.25);
+  --rp-glass-gold-border-bottom: rgba(200, 136, 42, 0.35);
+  --rp-glass-ember-bg: rgba(229, 135, 27, 0.1);
+  --rp-glass-ember-border: rgba(229, 135, 27, 0.2);
+  --rp-glass-ember-border-bottom: rgba(229, 135, 27, 0.3);
+  --rp-shadow-surface: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --shadow-dark: var(--rp-shadow-surface);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 136, 42, 0.4); }
+  50% { box-shadow: 0 0 20px 8px rgba(200, 136, 42, 0.1); }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    background: var(--gradient-page);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--rp-border-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+}
+
+@layer components {
+  .glass-light {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .glass-gold {
+    background: var(--rp-glass-gold-bg);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid var(--rp-glass-gold-border);
+    border-bottom: 1px solid var(--rp-glass-gold-border-bottom);
+  }
+
+  .glass-dark {
+    background: var(--rp-glass-bg);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid var(--rp-glass-border);
+    border-bottom: 1px solid var(--rp-glass-border-bottom);
+  }
+
+  .glass-frost {
+    background: var(--rp-glass-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--rp-glass-border);
+    border-bottom: 1px solid var(--rp-glass-border-bottom);
+  }
+
+  .glass-ember {
+    background: var(--rp-glass-ember-bg);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid var(--rp-glass-ember-border);
+    border-bottom: 1px solid var(--rp-glass-ember-border-bottom);
+  }
+
+  .text-gradient-crown {
+    background: var(--gradient-crown);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-shadow { text-shadow: 0 2px 24px rgba(0,0,0,0.4); }
+
+  .btn-primary-gold {
+    background: linear-gradient(135deg, #c8882a 0%, #a56a2b 100%);
+    color: #ffffff;
+    box-shadow: var(--shadow-gold);
+    transition: all 200ms ease-out;
+  }
+
+  .btn-primary-gold:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-gold-lg);
+  }
+
+  .font-display { font-family: var(--font-display); }
+  .font-data { font-family: var(--font-mono); }
+
+  .section-padding {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-padding {
+      padding-top: 5rem;
+      padding-bottom: 5rem;
+    }
+  }
+
+  .card-hover {
+    transition: transform 300ms ease-out, box-shadow 300ms ease-out, border-color 300ms ease-out;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-gold);
+    border-color: var(--rp-glass-gold-border);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--rp-bg-tertiary) 0%,
+      var(--rp-bg-secondary) 50%,
+      var(--rp-bg-tertiary) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+
+  .register-celestial {
+    background: var(--rp-bg-primary);
+    color: var(--rp-text-primary);
+  }
+
+  .register-parchment {
+    background: var(--rp-bg-secondary);
+    color: var(--rp-text-primary);
+  }
+
+  .register-warm {
+    background: var(--gradient-obsidian);
+    color: #fffefa;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-hover:hover {
+    transform: none;
+  }
+}
+
+[data-product="website"] {
+  --theme-default: light;
+  --gradient-hero: var(--gradient-crown);
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --rp-border-default: currentColor;
+    --rp-border-focus: currentColor;
+    --shadow-gold: none;
+  }
+
+  .glass-light, .glass-gold, .glass-dark, .glass-frost, .glass-ember {
+    background: Canvas !important;
+    border: 2px solid CanvasText !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media print {
+  :root {
+    --rp-bg-primary: #ffffff !important;
+    --rp-text-primary: #000000 !important;
+    --rp-border-default: #cccccc !important;
+  }
+
+  .no-print, .glass-light, .glass-gold, .glass-dark, .glass-frost, .glass-ember,
+  nav, .mobile-menu, .theme-toggle {
+    display: none !important;
+  }
+
+  body { font-size: 12pt; line-height: 1.5; }
+}

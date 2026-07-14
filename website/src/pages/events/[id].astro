@@ -1,0 +1,79 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHero from "../../components/shared/PageHero.astro";
+import Button from "../../components/ui/Button.astro";
+
+import { getEventById, getEvents } from "../../lib/api";
+import { formatEventDate } from "../../lib/format";
+
+
+export async function getStaticPaths() {
+  try {
+    const events = await getEvents();
+    return events.map((e) => ({ params: { id: String(e.id) } }));
+  } catch {
+    return [];
+  }
+}
+
+const { id } = Astro.params;
+const event = id ? await getEventById(id) : undefined;
+
+if (!event) return Astro.redirect("/events");
+---
+
+<Layout title={event.title} description={event.description}>
+  <PageHero
+    title={event.title}
+    subtitle={`${formatEventDate(event.date)} · ${event.time} · ${event.location}`}
+    register="warm"
+  />
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-4xl px-5 md:px-8">
+      <div class="relative aspect-[16/9] overflow-hidden rounded-xl border border-border">
+        <img
+          src={event.image}
+          alt={event.title}
+          class="h-full w-full object-cover"
+        />
+      </div>
+      <div class="mt-8 space-y-4">
+        <p class="text-lg leading-relaxed text-muted-foreground">
+          {event.description}
+        </p>
+        <div class="glass-frost rounded-xl p-6">
+          <dl class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt
+                class="text-xs font-semibold uppercase tracking-wider text-primary"
+              >
+                Date
+              </dt>
+              <dd class="mt-1 font-medium text-foreground">
+                {formatEventDate(event.date)}
+              </dd>
+            </div>
+            <div>
+              <dt
+                class="text-xs font-semibold uppercase tracking-wider text-primary"
+              >
+                Time
+              </dt>
+              <dd class="mt-1 font-medium text-foreground">{event.time}</dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt
+                class="text-xs font-semibold uppercase tracking-wider text-primary"
+              >
+                Location
+              </dt>
+              <dd class="mt-1 font-medium text-foreground">{event.location}</dd>
+            </div>
+          </dl>
+        </div>
+        <Button href="/visit#rsvp" variant="primary">Plan Your Visit</Button>
+      </div>
+    </div>
+  </section>
+</Layout>

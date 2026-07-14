@@ -1,0 +1,61 @@
+---
+import Button from "../ui/Button.astro";
+import { images, site } from "../../lib/site";
+import type { SiteConfig } from "../../lib/api";
+
+interface Props {
+  config?: SiteConfig;
+}
+
+const { config } = Astro.props;
+const heroImage = images.hero;
+const scripture = config?.scripture ?? site.scripture;
+const tagline = config?.tagline ?? site.tagline;
+const description = config?.description ?? site.description;
+---
+
+<section class="relative min-h-screen overflow-hidden text-white -mt-20" data-hero-animator>
+  <div data-hero-image class="absolute inset-0">
+    <img
+      src={heroImage}
+      alt="Royal Priesthood Embassy worship gathering"
+      class="h-full w-full object-cover"
+    />
+  </div>
+  <div
+    class="absolute inset-0 bg-gradient-to-b from-obsidian-900/70 via-obsidian-900/40 to-obsidian-900/85"
+  >
+  </div>
+
+  <div
+    class="relative mx-auto flex min-h-screen max-w-7xl flex-col justify-end px-5 pb-16 pt-32 md:px-8 md:pb-24"
+  >
+    <div class="max-w-4xl">
+      <p
+        data-hero-line
+        class="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gold-300"
+      >
+        {scripture}
+      </p>
+      <h1
+        data-hero-line
+        class="font-display text-4xl leading-[1.1] tracking-tight text-shadow md:text-6xl lg:text-[3.5rem]"
+        style="text-shadow: 0 2px 24px rgba(0,0,0,0.4)"
+      >
+        {tagline}
+      </h1>
+      <p
+        data-hero-line
+        class="mt-6 max-w-2xl text-lg text-ivory-100/90 md:text-xl"
+      >
+        {description}
+      </p>
+    </div>
+
+    <div class="mt-12 flex flex-col gap-4 border-t border-white/20 pt-8 sm:flex-row sm:items-center">
+      <span data-hero-cta>
+        <Button href="/visit" variant="gold">Plan Your Visit</Button>
+      </span>
+    </div>
+  </div>
+</section>

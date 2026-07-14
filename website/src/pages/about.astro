@@ -1,0 +1,137 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import Button from "../components/ui/Button.astro";
+import LeaderCard from "../components/content/LeaderCard.astro";
+import { getLeaders, getSiteConfig } from "../lib/api";
+import { site } from "../lib/site";
+
+const config = await getSiteConfig();
+const leaders = await getLeaders();
+const themeImage = config?.theme2026?.image ?? "/images/posters/theme-2026-latter-rain.jpeg";
+
+const president = leaders.find((l) => l.role.toLowerCase().includes("president"));
+const directors = leaders.filter(
+  (l) =>
+    l.id !== president?.id &&
+    !l.role.toLowerCase().includes("finance") &&
+    !l.role.toLowerCase().includes("hospitality"),
+);
+const otherLeaders = leaders.filter(
+  (l) =>
+    l.id !== president?.id &&
+    (l.role.toLowerCase().includes("finance") ||
+      l.role.toLowerCase().includes("hospitality")),
+);
+---
+
+<Layout
+  title="About"
+  description="Learn about Royal Priesthood Embassy — our story, beliefs, values, and leadership team in Thika, Kenya."
+>
+  <section class="register-parchment section-padding pt-30">
+    <div class="mx-auto max-w-7xl px-5 text-center md:px-8">
+      <p class="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+        1 Peter 2:9
+      </p>
+      <h1 class="font-display text-4xl tracking-tight text-foreground md:text-5xl lg:text-6xl">
+        Welcome to the Embassy
+      </h1>
+      <blockquote class="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-foreground md:text-xl">
+        &ldquo;When you step into Royal Priesthood Embassy, you are entering a space where the laws of this place are not Kenya&rsquo;s laws &mdash; you are entering the Kingdom. Whether you&rsquo;re exploring faith for the first time or you&rsquo;ve walked with Jesus for years, there is a place here for you. We can&rsquo;t wait to meet you.&rdquo;
+      </blockquote>
+      <p class="mt-6 font-semibold text-primary">
+        &mdash; our Vision
+      </p>
+      <blockquote class="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-foreground md:text-xl">
+        &ldquo;When you step into Royal Priesthood Embassy, you are entering a space where the laws of this place are not Kenya&rsquo;s laws &mdash; you are entering the Kingdom. Whether you&rsquo;re exploring faith for the first time or you&rsquo;ve walked with Jesus for years, there is a place here for you. We can&rsquo;t wait to meet you.&rdquo;
+      </blockquote>
+      <p class="mt-6 font-semibold text-primary">
+        &mdash; Our Mission
+      </p>
+    </div>
+  </section>
+
+  {
+    config?.values && config.values.length > 0 && (
+      <section class="register-parchment section-padding">
+        <div class="mx-auto max-w-7xl px-5 md:px-8">
+          <div class="text-center">
+            <h2 class="font-display text-3xl text-foreground md:text-4xl">Our Values</h2>
+            <p class="mx-auto mt-4 max-w-2xl text-muted-foreground">
+              The Mantle, Rod, and Sword — Identity, Authority, and Execution
+            </p>
+          </div>
+          <div class="mt-12 grid gap-8 md:grid-cols-3">
+            {config.values.map((value) => (
+              <article class="card-hover glass-frost rounded-xl p-8 text-center">
+                <h3 class="font-display text-xl text-primary">{value.title}</h3>
+                <p class="mt-4 text-sm text-muted-foreground">{value.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section id="leadership" class="register-celestial section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <div class="text-center">
+        <h2 class="font-display text-3xl text-foreground md:text-4xl">
+          Leadership Team
+        </h2>
+      </div>
+
+      {
+        president && (
+          <div class="mt-12">
+            <article class="mx-auto max-w-md text-center">
+              <LeaderCard leader={president} />
+            </article>
+          </div>
+        )
+      }
+
+      {
+        directors.length > 0 && (
+          <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {directors.map((leader) => (
+              <LeaderCard leader={leader} />
+            ))}
+          </div>
+        )
+      }
+
+      {
+        otherLeaders.length > 0 && (
+          <div class="mx-auto mt-12 grid max-w-2xl gap-8 sm:grid-cols-2">
+            {otherLeaders.map((leader) => (
+              <LeaderCard leader={leader} />
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-4xl px-5 text-center md:px-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+        2026 Theme
+      </p>
+      <h2 class="font-display mt-2 text-4xl text-foreground md:text-5xl">
+        {config?.theme2026?.title ?? site.theme2026.title}
+      </h2>
+      <p class="mt-4 text-xl text-foreground">
+        {config?.theme2026?.scripture ?? site.theme2026.scripture}
+      </p>
+      <p class="mt-6 text-lg text-muted-foreground">
+        {config?.theme2026?.scriptureText ?? site.theme2026.scriptureText}
+      </p>
+      <div class="mt-8">
+        <Button href="/visit" variant="gold">Join Us</Button>
+      </div>
+    </div>
+  </section>
+</Layout>

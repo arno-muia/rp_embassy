@@ -1,0 +1,112 @@
+---
+import { formatDate } from "../../lib/format";
+import { formatEventDate } from "../../lib/format";
+import type { SermonView } from "../../types";
+import type { EventView } from "../../types";
+
+interface Props {
+  sermon: SermonView | null;
+  events: EventView[];
+}
+
+const { sermon, events = [] }: Props = Astro.props;
+---
+
+{(sermon || events.length > 0) && (
+<section class="register-celestial section-padding">
+  <div class="mx-auto max-w-7xl px-5 md:px-8">
+    <div class="flex flex-col gap-12 lg:flex-row lg:gap-16 lg:items-stretch lg:justify-center">
+      {sermon && (
+        <div class="flex lg:h-full flex-col min-h-0 lg:w-1/2 lg:max-w-xl" data-reveal data-reveal-y="24" data-reveal-duration="0.5">
+          <div class="mb-6 text-center">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Latest Teaching
+            </p>
+            <h3 class="font-display mt-2 text-2xl text-foreground md:text-3xl">
+              Latest Sermon
+            </h3>
+          </div>
+          <a href={`/sermons/${sermon.slug}`} class="group mb-6 block">
+            <div class="relative aspect-video overflow-hidden rounded-xl border border-primary/20 shadow-gold">
+              <img
+                src={sermon.thumbnail}
+                alt={sermon.title}
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+          </a>
+          <div class="flex flex-col items-center text-center">
+            <div>
+              <h4 class="font-display text-xl text-foreground md:text-2xl">
+                {sermon.title}
+              </h4>
+              <p class="mt-2 text-muted-foreground">
+                {sermon.speaker} · {formatDate(sermon.date)}
+              </p>
+            </div>
+            <div class="mt-6 flex flex-wrap gap-4 justify-center">
+              <a href={`/sermons/${sermon.slug}`} class="inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring btn-primary-gold px-6 py-3 text-white">
+                Watch Now
+              </a>
+              <a href="/sermons" class="inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border border-primary/40 bg-transparent text-primary hover:bg-primary/8 px-6 py-3">
+                Browse All Sermons
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+      {events.length > 0 && (
+        <div class="flex lg:h-full flex-col min-h-0 lg:w-1/2 lg:max-w-xl" data-reveal data-reveal-y="24" data-reveal-duration="0.5">
+          <div class="mb-6 text-center">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Mark Your Calendar
+            </p>
+            <h3 class="font-display mt-2 text-2xl text-foreground md:text-3xl">
+              Upcoming Events
+            </h3>
+          </div>
+          <div class="mb-[18px] flex flex-1 flex-col gap-[10px] min-h-0">
+            {events.map((event) => (
+              <a
+                href={`/events/${event.slug}`}
+                class="group flex flex-1 items-stretch gap-4 rounded-xl border border-primary/20 glass-frost p-5 transition-colors hover:border-primary/40 hover:bg-ivory-25/10 lg:p-[20.8px]"
+              >
+                <div class="relative h-24 w-24 flex-shrink-0 self-center overflow-hidden rounded-lg lg:h-28 lg:w-28">
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="120px"
+                  />
+                  {event.status === "ongoing" && (
+                    <span class="absolute left-1 top-1 rounded-full bg-fire-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      Ongoing
+                    </span>
+                  )}
+                </div>
+                <div class="flex flex-1 flex-col justify-center min-w-0">
+                  <p class="text-sm text-primary">
+                    {formatEventDate(event.date)}
+                  </p>
+                  <h4 class="truncate font-display text-base text-foreground group-hover:text-primary lg:text-lg">
+                    {event.title}
+                  </h4>
+                  <p class="truncate text-sm text-muted-foreground mt-1">
+                    {event.location}
+                  </p>
+                </div>
+                <div class="hidden flex-shrink-0 self-center md:block">
+                  <span class="text-primary transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+)}

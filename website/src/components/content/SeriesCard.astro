@@ -1,0 +1,20 @@
+---
+import type { SeriesView } from "../../types";
+
+interface Props {
+  series: SeriesView;
+}
+
+const { series } = Astro.props;
+---
+
+<a
+  href={`/series/${series.slug}`}
+  class="card-hover glass-frost block rounded-xl p-6"
+>
+  <h3 class="font-display text-xl text-foreground">{series.title}</h3>
+  <p class="mt-2 text-sm text-muted-foreground">{series.description}</p>
+  <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-primary">
+    {series.sermonCount} sermons
+  </p>
+</a>

@@ -1,0 +1,33 @@
+---
+import type { LeaderView } from "../../types";
+import { leaderInitials } from "../../lib/format";
+
+interface Props {
+  leader: LeaderView;
+}
+
+const { leader } = Astro.props;
+---
+
+<article class="text-center">
+  {
+    leader.photo ? (
+      <div class="relative mx-auto h-48 w-48 overflow-hidden rounded-full border-2 border-primary/20">
+        <img
+          src={leader.photo}
+          alt={leader.name}
+          class="h-full w-full object-cover"
+        />
+      </div>
+    ) : (
+      <div class="mx-auto flex h-48 w-48 items-center justify-center rounded-full bg-primary/10">
+        <span class="font-display text-4xl text-primary">
+          {leaderInitials(leader.name)}
+        </span>
+      </div>
+    )
+  }
+  <h3 class="mt-4 font-semibold text-foreground">{leader.name}</h3>
+  <p class="text-sm font-medium text-primary">{leader.role}</p>
+  <p class="mt-2 text-sm text-muted-foreground">{leader.bio}</p>
+</article>

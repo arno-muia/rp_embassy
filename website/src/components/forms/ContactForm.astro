@@ -1,0 +1,82 @@
+---
+import { API_ENDPOINTS } from "../../lib/api";
+
+const formShellClass = "space-y-6 glass-frost rounded-2xl p-8";
+const labelClass = "block text-sm font-medium text-foreground";
+const inputClass =
+  "mt-1 w-full rounded-md border border-border bg-card px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:opacity-50";
+const textareaClass = `${inputClass} resize-y min-h-[120px]`;
+---
+
+<form id="contact-form" class={formShellClass} data-endpoint={API_ENDPOINTS.contact}>
+  <h2 class="font-display text-2xl text-foreground">Send a Message</h2>
+  <div>
+    <label for="name" class={labelClass}>Name</label>
+    <input id="name" name="name" type="text" required class={inputClass} />
+  </div>
+  <div>
+    <label for="email" class={labelClass}>Email</label>
+    <input id="email" name="email" type="email" required class={inputClass} />
+  </div>
+  <div>
+    <label for="phone" class={labelClass}>Phone (optional)</label>
+    <input id="phone" name="phone" type="tel" class={inputClass} />
+  </div>
+  <div>
+    <label for="message" class={labelClass}>Message</label>
+    <textarea
+      id="message"
+      name="message"
+      rows="4"
+      required
+      class={textareaClass}
+    ></textarea>
+  </div>
+  <input
+    type="text"
+    name="honeypot"
+    tabindex="-1"
+    autocomplete="off"
+    class="absolute -left-[9999px] h-0 w-0 opacity-0"
+    aria-hidden="true"
+  />
+  <button
+    type="submit"
+    class="btn-primary-gold w-full rounded-md px-6 py-3 text-sm font-semibold text-white"
+  >
+    Send Message
+  </button>
+  <p data-status class="hidden text-sm"></p>
+</form>
+
+<script>
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = form.querySelector("[data-status]") as HTMLElement;
+    const data = Object.fromEntries(new FormData(form));
+    if (data.honeypot) return;
+    const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+    status.className = "text-sm text-muted-foreground";
+    status.textContent = "";
+    try {
+      const res = await fetch(form.dataset.endpoint!, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed");
+      status.className = "text-sm text-rp-success";
+      status.textContent = "Message sent! We'll be in touch soon.";
+      form.reset();
+    } catch {
+      status.className = "text-sm text-rp-danger";
+      status.textContent = "Something went wrong. Please email us directly.";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Send Message";
+    }
+  });
+</script>

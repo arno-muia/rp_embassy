@@ -1,0 +1,83 @@
+---
+import type { WhatToExpectItem } from "../../types";
+
+interface Props {
+  items?: WhatToExpectItem[];
+}
+
+const iconMap: Record<string, string> = {
+  music: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  "book-open": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  users: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  "trending-up": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+};
+
+const { items = [] }: Props = Astro.props;
+---
+
+<section class="register-parchment section-padding">
+  <div class="mx-auto max-w-7xl px-5 md:px-8">
+    <div class="mb-12 text-center" data-reveal data-reveal-y="24" data-reveal-duration="0.5">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">First Visit?</p>
+      <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">What to Expect</h2>
+    </div>
+
+    {items.length > 0 && (
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4" data-scroll-reveal-stagger>
+        {items.map((item) => {
+          const iconSvg = iconMap[item.icon] ?? iconMap.users;
+          return (
+            <article class="card-hover glass-frost rounded-xl p-6 text-center">
+              <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full glass-gold">
+                <div set:html={iconSvg} />
+              </div>
+              <h3 class="font-display text-lg text-foreground">{item.title}</h3>
+              <p class="mt-2 text-sm text-muted-foreground">{item.description}</p>
+            </article>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  // Intersection-based staggered reveal
+  (function() {
+    const container = document.querySelector('[data-scroll-reveal-stagger]');
+    if (!container) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      container.querySelectorAll('article').forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.transform = 'translateY(0)';
+      });
+      return;
+    }
+
+    const articles = container.querySelectorAll('article');
+    articles.forEach((el) => {
+      (el as HTMLElement).style.opacity = '0';
+      (el as HTMLElement).style.transform = 'translateY(30px)';
+      (el as HTMLElement).style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          articles.forEach((el, i) => {
+            setTimeout(() => {
+              (el as HTMLElement).style.opacity = '1';
+              (el as HTMLElement).style.transform = 'translateY(0)';
+            }, i * 100);
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(container);
+  })();
+</script>

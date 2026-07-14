@@ -1,0 +1,33 @@
+---
+/**
+ * PageTransition.astro
+ *
+ * Astro-native replacement for apps/web/src/components/motion/page-transition.tsx
+ * (framer-motion `PageTransition`: initial { opacity:0, y:8 } ->
+ * animate { opacity:1, y:0 }, duration 0.3, ease "easeOut").
+ *
+ * Astro is a multi-page static site, so per-route exit animations are not
+ * feasible without a client router. The closest equivalent is a mount-time
+ * entrance fade/slide on the wrapped slot. Honors prefers-reduced-motion
+ * (handled by the shared initPageTransition in scroll-reveal.ts and the
+ * global CSS guard in global.css).
+ */
+interface Props {
+  class?: string;
+  as?: string;
+}
+
+const { class: className = "", as = "div" } = Astro.props;
+const Tag = as;
+---
+
+<Tag class={className} data-page-transition>
+  <slot />
+</Tag>
+
+<script>
+  import { initPageTransition } from "../../lib/scroll-reveal";
+  document.addEventListener("DOMContentLoaded", () => {
+    initPageTransition();
+  });
+</script>

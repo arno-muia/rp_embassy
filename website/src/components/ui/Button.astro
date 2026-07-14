@@ -1,0 +1,75 @@
+---
+import { cn } from "../../lib/cn";
+
+type Variant =
+  | "primary"
+  | "secondary"
+  | "alternate"
+  | "ghost"
+  | "gold"
+  | "outline"
+  | "link"
+  | "small";
+
+interface Props {
+  href?: string;
+  variant?: Variant;
+  class?: string;
+  external?: boolean;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+}
+
+const {
+  href,
+  variant = "primary",
+  class: className,
+  external,
+  type = "button",
+  disabled,
+} = Astro.props;
+
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
+const variants: Record<Variant, string> = {
+  primary: "btn-primary-gold px-6 py-3 text-white",
+  secondary:
+    "border border-primary/40 bg-transparent text-primary hover:bg-primary/8 px-6 py-3",
+  alternate:
+    "border border-ivory-25/80 bg-transparent text-ivory-25 hover:bg-ivory-25/10 px-6 py-3",
+  ghost:
+    "border border-white/30 bg-transparent text-white hover:bg-white/10 px-6 py-3",
+  gold: "btn-primary-gold px-6 py-3",
+  outline:
+    "border border-border bg-card text-foreground hover:border-primary/40 hover:shadow-gold px-6 py-3",
+  link: "bg-transparent text-primary px-0 hover:text-gold-600",
+  small: "btn-primary-gold text-sm px-5 py-2.5",
+};
+
+const classes = cn(base, variants[variant], className);
+
+const isExternal = external || (href?.startsWith("http") ?? false);
+---
+
+{
+  href ? (
+    isExternal ? (
+      <a href={href} class={classes} target="_blank" rel="noopener noreferrer">
+        <slot />
+      </a>
+    ) : href.startsWith("#") ? (
+      <a href={href} class={classes}>
+        <slot />
+      </a>
+    ) : (
+      <a href={href} class={classes}>
+        <slot />
+      </a>
+    )
+  ) : (
+    <button type={type} class={classes} disabled={disabled}>
+      <slot />
+    </button>
+  )
+}

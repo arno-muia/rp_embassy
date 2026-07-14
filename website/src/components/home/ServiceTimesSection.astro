@@ -1,0 +1,287 @@
+---
+import type { ServiceTime } from "../../types";
+
+interface Props {
+  services: ServiceTime[];
+}
+
+const { services = [] }: Props = Astro.props;
+
+const FALLBACK_SERVICES: ServiceTime[] = [
+  {
+    name: "Sunday Online Service",
+    day: "Sunday",
+    time: "6:00 AM – 8:00 AM",
+    platform: "online",
+    location: "Google Meet",
+    link: "https://www.youtube.com/@RoyalPriesthoodEmbassy",
+    description: "Early morning worship and teaching for our online family. Join from anywhere in the world.",
+    image: "/images/events/sunday-online-service-poster-1.jpeg",
+  },
+  {
+    name: "Saturday Physical Service",
+    day: "Saturday",
+    time: "9:00 AM – 12:00 PM",
+    platform: "physical",
+    location: "Voice of Grace, Behind Spoonzoom, Thika",
+    description: "Our primary worship gathering — worship, teaching, and ministry time in the sanctuary.",
+    image: "/images/services/kingdom-formation-2.jpg",
+  },
+  {
+    name: "Kingdom Formation",
+    day: "Tuesday",
+    time: "8:30 PM",
+    platform: "online",
+    location: "Google Meet",
+    link: "https://www.youtube.com/@RoyalPriesthoodEmbassy",
+    description: "Blueprint Tuesdays — deep discipleship teaching and Holy Communion. Where Kingdom patterns are revealed.",
+    image: "/images/events/kingdom-formation-poster.jpeg",
+  },
+  {
+    name: "Thursday Partner's Meeting",
+    day: "Thursday",
+    time: "TBD",
+    platform: "online",
+    location: "Voice of Grace, Behind Spoonzoom, Thika",
+    description: "Corporate prayer and intercession for the nation, church, and families.",
+    image: "/images/services/kingdom-formation-3.jpg",
+  },
+  {
+    name: "Cell Group Meetings",
+    day: "Wednesday",
+    time: "TBD",
+    platform: "physical",
+    location: "Thika, Juja, Bypass, Kahawa Sukari, Kasarani, Kitengela",
+    image: "/images/services/kingdom-formation-3.jpg",
+  },
+];
+
+const TAB_ORDER = [
+  "Sunday Online Service",
+  "Saturday Physical Service",
+  "Kingdom Formation",
+  "Thursday Partner's Meeting",
+  "Cell Group Meetings",
+];
+
+const orderedServices = TAB_ORDER.map((tabName) =>
+  services.find((s) => s.name === tabName) ?? FALLBACK_SERVICES.find((s) => s.name === tabName) ?? null,
+).filter(Boolean) as ServiceTime[];
+
+const first = orderedServices[0];
+const isOnline = first?.platform === "online";
+---
+
+<section class="register-celestial section-padding">
+  <div class="mx-auto max-w-7xl px-5 md:px-8">
+    <div class="mb-12 text-center" data-reveal data-reveal-y="24" data-reveal-duration="0.5">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Join Us</p>
+      <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">Service Times</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-muted-foreground">
+        Whether you join us in Thika or online from anywhere in the world, there is a gathering for you.
+      </p>
+    </div>
+
+    {orderedServices.length > 0 && (
+      <div class="mx-auto w-full max-w-7xl" data-reveal data-reveal-y="30" data-reveal-duration="0.6">
+        <!-- Tab Navigation Bar -->
+        <div class="mb-8 flex overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur-sm">
+          {orderedServices.map((service, i) => (
+            <button
+              type="button"
+              data-tab={i}
+              class:list={[
+                "service-tab relative flex-1 px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider transition-colors duration-200 md:px-4 md:text-sm",
+                { "text-primary": i === 0, "text-muted-foreground hover:text-foreground": i !== 0 }
+              ]}
+            >
+              {i === 0 && (
+                <span class="active-indicator absolute inset-0 border-b-2 border-primary bg-primary/5"></span>
+              )}
+              <span class="relative z-10">{service.name}</span>
+            </button>
+          ))}
+        </div>
+
+        <!-- Card Display -->
+        <div id="service-card-container" class="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+          {first && <>
+              {first.image && (
+                <div class="relative aspect-[8/3] w-full md:aspect-[7/2]">
+                  <img src={first.image} alt={first.name} class="h-full w-full object-cover" />
+                </div>
+              )}
+            <div class="border-t border-border p-5 text-center md:p-6">
+              <div class="mb-3">
+                <p class="text-xs font-semibold uppercase tracking-wider text-primary">{first.day} · {first.time}</p>
+                <h3 class="mt-1 font-display text-xl text-foreground md:text-2xl">{first.name}</h3>
+              </div>
+              {first.location && <p class="text-sm font-medium text-foreground">{first.location}</p>}
+              {first.description && <p class="mt-2 text-sm text-muted-foreground">{first.description}</p>}
+              {first.link && (
+                <a href={first.link} target="_blank" rel="noopener noreferrer" class="mt-4 inline-block text-sm font-semibold text-primary transition-colors hover:text-gold-600">
+                  Join Online →
+                </a>
+              )}
+              <div class="mt-4 flex justify-center">
+                {isOnline ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-primary" aria-label="Online service">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-primary" aria-label="Physical service">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                )}
+              </div>
+            </div>
+          </>}
+        </div>
+
+        <!-- Dot indicators (matching original project) -->
+        {orderedServices.length > 1 && (
+          <div class="mt-6 flex justify-center gap-2">
+            {orderedServices.map((service, i) => (
+              <button
+                type="button"
+                aria-label={`Show ${service.name}`}
+                data-dot={i}
+                class:list={[
+                  "service-dot h-2 rounded-full transition-all duration-300",
+                  { "w-6 bg-primary": i === 0, "w-2 bg-border": i !== 0 }
+                ]}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</section>
+
+<script set:html={`const services = ${JSON.stringify(orderedServices)};`}></script>
+<script>
+  let activeIndex = 0;
+  let autoplayTimer = null;
+  const AUTOPLAY_DELAY = 5000;
+
+  function renderCard(index) {
+    const current = services[index];
+    const container = document.getElementById("service-card-container");
+    if (!container || !current) return;
+
+    const isOnline = current.platform === "online";
+    const iconSvg = isOnline
+      ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-primary" aria-label="Online service"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-primary" aria-label="Physical service"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+    container.innerHTML = ''
+      + (current.image
+      ? '<div class="relative aspect-[8/3] w-full md:aspect-[7/2]"><img src="' + current.image + '" alt="' + current.name + '" class="h-full w-full object-cover" /></div>'
+        : '')
+      + '<div class="border-t border-border p-5 text-center md:p-6">'
+      + '<div class="mb-3">'
+      + '<p class="text-xs font-semibold uppercase tracking-wider text-primary">' + current.day + ' · ' + current.time + '</p>'
+      + '<h3 class="mt-1 font-display text-xl text-foreground md:text-2xl">' + current.name + '</h3>'
+      + '</div>'
+      + (current.location ? '<p class="text-sm font-medium text-foreground">' + current.location + '</p>' : '')
+      + (current.description ? '<p class="mt-2 text-sm text-muted-foreground">' + current.description + '</p>' : '')
+      + (current.link ? '<a href="' + current.link + '" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block text-sm font-semibold text-primary transition-colors hover:text-gold-600">Join Online →</a>' : '')
+      + '<div class="mt-4 flex justify-center">' + iconSvg + '</div>'
+      + '</div>';
+  }
+
+  function updateTabs(index) {
+    document.querySelectorAll(".service-tab").forEach((tab, i) => {
+      const btn = tab;
+      if (i === index) {
+        btn.classList.add("text-primary");
+        btn.classList.remove("text-muted-foreground");
+        btn.style.backgroundColor = "rgba(200, 136, 42, 0.05)";
+        btn.style.borderBottom = "2px solid var(--rp-accent-primary)";
+      } else {
+        btn.classList.remove("text-primary");
+        btn.classList.add("text-muted-foreground");
+        btn.style.backgroundColor = "";
+        btn.style.borderBottom = "";
+      }
+      const existingIndicator = btn.querySelector(".active-indicator");
+      if (existingIndicator) existingIndicator.remove();
+    });
+
+    const activeTab = document.querySelector(`.service-tab[data-tab="${index}"]`);
+    if (activeTab && !activeTab.querySelector(".active-indicator")) {
+      const indicator = document.createElement("span");
+      indicator.className = "active-indicator absolute inset-0 border-b-2 border-primary bg-primary/5";
+      activeTab.appendChild(indicator);
+    }
+  }
+
+  function updateDots(index) {
+    document.querySelectorAll(".service-dot").forEach((dot, i) => {
+      const btn = dot;
+      if (i === index) {
+        btn.classList.add("w-6", "bg-primary");
+        btn.classList.remove("w-2", "bg-border");
+      } else {
+        btn.classList.remove("w-6", "bg-primary");
+        btn.classList.add("w-2", "bg-border");
+      }
+    });
+  }
+
+  function goTo(index) {
+    if (index < 0) index = services.length - 1;
+    if (index >= services.length) index = 0;
+    if (index !== activeIndex) {
+      activeIndex = index;
+      renderCard(activeIndex);
+      updateTabs(activeIndex);
+      updateDots(activeIndex);
+    }
+  }
+
+  // Tab clicks
+  document.querySelectorAll(".service-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      goTo(parseInt(tab.dataset.tab || "0"));
+    });
+    tab.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        goTo(parseInt(tab.dataset.tab || "0"));
+      }
+    });
+  });
+
+  // Dot clicks
+  document.querySelectorAll(".service-dot").forEach((dot) => {
+    dot.addEventListener("click", () => {
+      goTo(parseInt(dot.dataset.dot || "0"));
+    });
+  });
+
+  // Keyboard arrow keys
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") goTo(activeIndex - 1);
+    if (e.key === "ArrowRight") goTo(activeIndex + 1);
+  });
+
+  // Initial render
+  renderCard(0);
+  updateTabs(0);
+  updateDots(0);
+</script>
+
+<style>
+  .service-tab:focus-visible {
+    outline: 2px solid var(--rp-border-focus);
+    outline-offset: 2px;
+    z-index: 10;
+  }
+
+  .service-dot:focus-visible {
+    outline: 2px solid var(--rp-border-focus);
+    outline-offset: 2px;
+  }
+</style>

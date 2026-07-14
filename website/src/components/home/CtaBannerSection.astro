@@ -1,0 +1,44 @@
+---
+import Button from "../ui/Button.astro";
+import { site } from "../../lib/site";
+import type { SiteConfig } from "../../lib/api";
+
+interface Props {
+  config?: SiteConfig;
+}
+
+const { config } = Astro.props;
+const sunday = config?.serviceTimes?.find(
+  (s) => s.name === "Sunday Online Service",
+);
+---
+
+<section class="section-padding">
+  <div data-reveal data-reveal-y="24" data-reveal-duration="0.5"
+    class="glass-frost mx-auto max-w-7xl rounded-2xl px-5 py-16 text-center md:px-8"
+  >
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+      Join Us This Sunday
+    </p>
+    <h2 class="font-display mt-4 text-3xl text-foreground md:text-5xl">
+      You're Invited
+    </h2>
+    <p class="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+      Whether you are exploring faith, looking for a church home, or have walked
+      with Jesus for years — we have a place for you in Thika.
+    </p>
+    {
+      sunday && (
+        <p class="mt-4 font-data text-primary">
+          {sunday.day} · {sunday.time} · {site.address.street}, {site.address.city}
+        </p>
+      )
+    }
+    <div
+      class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+    >
+      <Button href="/visit" variant="primary">Plan Your Visit</Button>
+      <Button href="/sermons" variant="secondary">Watch a Sermon</Button>
+    </div>
+  </div>
+</section>

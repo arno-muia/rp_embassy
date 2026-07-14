@@ -1,0 +1,74 @@
+---
+import { API_ENDPOINTS } from "../../lib/api";
+
+const formShellClass = "space-y-6 glass-frost rounded-2xl p-8";
+const labelClass = "block text-sm font-medium text-foreground";
+const inputClass =
+  "mt-1 w-full rounded-md border border-border bg-card px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:opacity-50";
+const textareaClass = `${inputClass} resize-y min-h-[120px]`;
+---
+
+<form id="prayer-form" class={formShellClass} data-endpoint={API_ENDPOINTS.prayer}>
+  <div>
+    <label for="name" class={labelClass}>Name (optional for anonymous)</label>
+    <input id="name" name="name" type="text" class={inputClass} />
+  </div>
+  <div>
+    <label for="request" class={labelClass}>Prayer Request</label>
+    <textarea
+      id="request"
+      name="request"
+      rows="6"
+      required
+      placeholder="Share what you'd like us to pray for..."
+      class={textareaClass}
+    ></textarea>
+  </div>
+  <label class="flex items-start gap-3">
+    <input
+      type="checkbox"
+      id="anonymous"
+      name="anonymous"
+      class="mt-1 rounded border-border text-primary focus:ring-primary"
+    />
+    <span class="text-sm text-muted-foreground">Submit anonymously</span>
+  </label>
+  <button
+    type="submit"
+    class="btn-primary-gold w-full rounded-md px-6 py-3 text-sm font-semibold text-white"
+  >
+    Submit Prayer Request
+  </button>
+  <p data-status class="hidden text-sm"></p>
+</form>
+
+<script>
+  const form = document.getElementById("prayer-form") as HTMLFormElement | null;
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = form.querySelector("[data-status]") as HTMLElement;
+    const data = Object.fromEntries(new FormData(form));
+    const anonymous = (form.querySelector("#anonymous") as HTMLInputElement)
+      .checked;
+    const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+    try {
+      const res = await fetch(form.dataset.endpoint!, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, anonymous }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      status.className = "text-sm text-rp-success";
+      status.textContent = "Prayer request received. Our team is praying with you.";
+      form.reset();
+    } catch {
+      status.className = "text-sm text-rp-danger";
+      status.textContent = "Something went wrong. Please try again.";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Submit Prayer Request";
+    }
+  });
+</script>

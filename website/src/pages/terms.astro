@@ -1,0 +1,50 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import { site } from "../lib/site";
+---
+
+<Layout
+  title="Terms of Service"
+  description="Terms of service for the Royal Priesthood Embassy website."
+>
+  <PageHero title="Terms of Service" register="parchment" />
+
+  <section class="register-celestial section-padding">
+    <div class="prose prose-stone mx-auto max-w-3xl px-5 md:px-8">
+      <p class="text-sm text-muted-foreground">Last updated: June 12, 2026</p>
+
+      <h2 class="font-display mt-8 text-2xl uppercase text-primary">Acceptance</h2>
+      <p class="mt-4 text-muted-foreground">
+        By accessing and using the {site.name} website, you accept and agree to be
+        bound by these Terms of Service.
+      </p>
+
+      <h2 class="font-display mt-8 text-2xl uppercase text-primary">Use of Content</h2>
+      <p class="mt-4 text-muted-foreground">
+        Sermon recordings, teaching materials, and website content are the property
+        of {site.name}. You may share links to our content for personal, non-commercial
+        use. Reproduction or distribution without permission is prohibited.
+      </p>
+
+      <h2 class="font-display mt-8 text-2xl uppercase text-primary">User Submissions</h2>
+      <p class="mt-4 text-muted-foreground">
+        By submitting contact forms, prayer requests, or other communications, you
+        grant us permission to use that information to respond to you and provide
+        ministry services as described in our Privacy Policy.
+      </p>
+
+      <h2 class="font-display mt-8 text-2xl uppercase text-primary">Disclaimer</h2>
+      <p class="mt-4 text-muted-foreground">
+        This website is provided "as is" without warranties of any kind.
+        We strive for accuracy in service times and event information but recommend
+        confirming details via our contact channels before visiting.
+      </p>
+
+      <h2 class="font-display mt-8 text-2xl uppercase text-primary">Contact</h2>
+      <p class="mt-4 text-muted-foreground">
+        Questions about these terms: {site.contact.email}
+      </p>
+    </div>
+  </section>
+</Layout>

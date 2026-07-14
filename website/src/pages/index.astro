@@ -1,0 +1,85 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HeroSection from "../components/home/HeroSection.astro";
+import ServiceTimesSection from "../components/home/ServiceTimesSection.astro";
+import EventsCarouselSection from "../components/home/EventsCarouselSection.astro";
+import WhatToExpectSection from "../components/home/WhatToExpectSection.astro";
+import LatestSermonSection from "../components/home/LatestSermonSection.astro";
+import TestimonialsSection from "../components/home/TestimonialsSection.astro";
+import PastorSection from "../components/home/PastorSection.astro";
+import CtaBannerSection from "../components/home/CtaBannerSection.astro";
+import {
+  getUpcomingEvents,
+  getLatestSermon,
+  getTestimonials,
+  getSiteConfig,
+} from "../lib/api";
+import { churchSchema } from "../lib/seo";
+
+const config = await getSiteConfig();
+const [events, latestSermon, testimonials] = await Promise.all([
+  getUpcomingEvents(5),
+  getLatestSermon(),
+  getTestimonials(),
+]);
+
+const schema = churchSchema();
+
+// Prepare data for client-side carousels
+const eventsData = events.map(e => ({
+  id: e.id,
+  slug: e.slug,
+  title: e.title,
+  description: e.description,
+  date: e.date,
+  location: e.location,
+  image: e.image,
+}));
+
+const testimonialsData = testimonials.map(t => ({
+  id: t.id,
+  quote: t.quote,
+  name: t.name,
+  role: t.role,
+  photo: t.photo,
+}));
+
+const sermonThumbnail = latestSermon?.thumbnail ?? "";
+---
+
+<Layout>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  
+  <!-- Inject data for client-side carousels -->
+  <script is:inline>
+    window.__EVENTS_DATA__ = JSON.parse('{JSON.stringify(eventsData)}');
+    window.__TESTIMONIALS_DATA__ = JSON.parse('{JSON.stringify(testimonialsData)}');
+    window.__SERMON_THUMBNAIL__ = '{sermonThumbnail}';
+  </script>
+
+  <HeroSection config={config} />
+
+  <!-- Service Times Section -->
+  {config?.serviceTimes && config.serviceTimes.length > 0 && (
+    <ServiceTimesSection services={config.serviceTimes} />
+  )}
+
+  <!-- Upcoming Events Carousel -->
+  <EventsCarouselSection events={events} />
+
+  <!-- What to Expect Section -->
+  {config?.whatToExpect && config.whatToExpect.length > 0 && (
+    <WhatToExpectSection items={config.whatToExpect} />
+  )}
+
+  <!-- Latest Sermon -->
+  {latestSermon && <LatestSermonSection sermon={latestSermon} />}
+
+  <!-- Testimonials Carousel -->
+  {testimonials.length > 0 && <TestimonialsSection testimonials={testimonials} sermonThumbnail={sermonThumbnail} />}
+
+  <!-- Pastor Section -->
+  <PastorSection />
+
+  <CtaBannerSection config={config} />
+</Layout>

@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import PrayerForm from "../components/forms/PrayerForm.astro";
+---
+
+<Layout
+  title="Prayer Request"
+  description="Submit a prayer request to Royal Priesthood Embassy."
+>
+  <PageHero
+    title="Prayer Request"
+    subtitle="We believe in the power of prayer. Share your request and our intercession team will stand with you."
+    register="warm"
+    scripture="James 5:16"
+  />
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-2xl px-5 md:px-8">
+      <PrayerForm />
+    </div>
+  </section>
+</Layout>

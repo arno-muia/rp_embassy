@@ -1,0 +1,17 @@
+---
+import TestimonialsCarousel from "./TestimonialsCarousel.astro";
+import type { TestimonialView } from "../../types";
+
+interface Props {
+  testimonials: TestimonialView[];
+  sermonThumbnail?: string;
+}
+
+const { testimonials = [], sermonThumbnail = "" } = Astro.props;
+---
+
+<section class="register-celestial section-padding">
+  <div class="mx-auto max-w-7xl px-5 md:px-8">
+    <TestimonialsCarousel testimonials={testimonials} sermonThumbnail={sermonThumbnail} />
+  </div>
+</section>

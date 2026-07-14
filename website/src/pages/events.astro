@@ -1,0 +1,52 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import EventCard from "../components/content/EventCard.astro";
+import { getEvents } from "../lib/api";
+
+const allEvents = await getEvents();
+const upcoming = allEvents.filter(
+  (e) => e.status === "upcoming" || e.status === "ongoing",
+);
+const past = allEvents.filter((e) => e.status === "past");
+---
+
+<Layout title="Events" description="Upcoming events, outreach, and special gatherings at Royal Priesthood Embassy.">
+  <PageHero
+    title="Events"
+    subtitle="Join us for worship nights, outreach, fellowship, and Kingdom gatherings in Thika and beyond."
+    register="warm"
+  />
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <h2 class="font-display text-2xl text-foreground">Upcoming & Ongoing</h2>
+      {
+        upcoming.length > 0 ? (
+          <div class="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {upcoming.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </div>
+        ) : (
+          <p class="mt-6 text-muted-foreground">No upcoming events at this time.</p>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    past.length > 0 && (
+      <section class="register-parchment section-padding">
+        <div class="mx-auto max-w-7xl px-5 md:px-8">
+          <h2 class="font-display text-2xl text-foreground">Past Events</h2>
+          <div class="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {past.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Layout>

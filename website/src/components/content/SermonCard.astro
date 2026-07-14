@@ -1,0 +1,46 @@
+---
+import type { SermonView } from "../../types";
+import { formatDate } from "../../lib/format";
+
+interface Props {
+  sermon: SermonView;
+}
+
+const { sermon } = Astro.props;
+---
+
+<article class="group card-hover">
+  <a href={`/sermons/${sermon.slug}`} class="block">
+    <div
+      class="relative aspect-video overflow-hidden rounded-xl border border-border"
+    >
+      <img
+        src={sermon.thumbnail}
+        alt={sermon.title}
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+      />
+      {
+        sermon.duration && (
+          <span class="absolute bottom-3 right-3 rounded-md bg-obsidian-900/80 px-2 py-1 font-data text-xs text-white">
+            {sermon.duration}
+          </span>
+        )
+      }
+    </div>
+    <div class="mt-4 space-y-1">
+      <span
+        class="text-xs font-semibold uppercase tracking-wider text-primary"
+      >
+        {sermon.series}
+      </span>
+      <h3
+        class="font-display text-lg text-foreground transition-colors group-hover:text-primary"
+      >
+        {sermon.title}
+      </h3>
+      <p class="text-sm text-muted-foreground">
+        {sermon.speaker} · {formatDate(sermon.date)}
+      </p>
+    </div>
+  </a>
+</article>

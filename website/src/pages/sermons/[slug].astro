@@ -1,0 +1,88 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHero from "../../components/shared/PageHero.astro";
+import SermonCard from "../../components/content/SermonCard.astro";
+import Button from "../../components/ui/Button.astro";
+
+import { getSermonBySlug, getRelatedSermons, getSermons } from "../../lib/api";
+import { formatDate } from "../../lib/format";
+
+
+export async function getStaticPaths() {
+  try {
+    const sermons = await getSermons();
+    return sermons.map((s) => ({ params: { slug: s.slug } }));
+  } catch {
+    return [];
+  }
+}
+
+const { slug } = Astro.params;
+const sermon = slug ? await getSermonBySlug(slug) : undefined;
+
+if (!sermon) return Astro.redirect("/sermons");
+
+const related = await getRelatedSermons(sermon);
+---
+
+<Layout title={sermon.title} description={sermon.description}>
+  <PageHero
+    title={sermon.title}
+    subtitle={`${sermon.speaker} · ${formatDate(sermon.date)} · ${sermon.series}`}
+    register="warm"
+    scripture={sermon.scripture}
+  />
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-4xl px-5 md:px-8">
+      <div
+        class="relative aspect-video overflow-hidden rounded-xl border border-primary/20 bg-obsidian-900"
+      >
+        <img
+          src={sermon.thumbnail}
+          alt={sermon.title}
+          class="h-full w-full object-cover opacity-60"
+        />
+        <div
+          class="absolute inset-0 flex flex-col items-center justify-center gap-4"
+        >
+          <p class="text-center text-ivory-100/90">
+            Watch this teaching on our YouTube channel
+          </p>
+          <Button href={sermon.videoUrl} variant="gold" external>
+            Watch on YouTube
+          </Button>
+        </div>
+      </div>
+      <p class="mt-8 text-lg leading-relaxed text-muted-foreground">
+        {sermon.description}
+      </p>
+      {
+        sermon.scripture && (
+          <p class="mt-4 text-lg text-primary">{sermon.scripture}</p>
+        )
+      }
+      <div class="mt-6 flex flex-wrap gap-4">
+        <Button href={sermon.videoUrl} variant="primary" external>
+          Watch on YouTube
+        </Button>
+        <Button href="/academy" variant="secondary">Kingdom Formation</Button>
+      </div>
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="register-parchment section-padding">
+        <div class="mx-auto max-w-7xl px-5 md:px-8">
+          <h2 class="font-display text-2xl text-foreground">Related Sermons</h2>
+          <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((s) => (
+              <SermonCard sermon={s} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Layout>

@@ -1,0 +1,47 @@
+---
+const { config } = Astro.props;
+---
+
+<section class="section-padding">
+  <div class="mx-auto max-w-7xl px-5 md:px-8">
+    <div class="mb-6 text-center" data-reveal data-reveal-y="24" data-reveal-duration="0.5">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Our Pastor</p>
+      <h3 class="font-display mt-2 text-3xl text-foreground md:text-4xl">Charles Muchemi</h3>
+    </div>
+    <div class="glass-frost card-hover flex flex-col overflow-hidden rounded-2xl md:flex-row" data-reveal data-reveal-y="30" data-reveal-duration="0.6">
+      <!-- Left — Image -->
+      <div class="relative min-h-[400px] w-full md:min-h-[440px] md:w-5/12 lg:w-2/5">
+        <a href="/about" class="block h-full w-full">
+          <img
+            src="/images/team/charles-muchemi.jpg"
+            alt="Pastor Charles Muchemi"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          />
+        </a>
+      </div>
+
+      <!-- Right — Content -->
+      <div class="flex flex-1 flex-col px-6 py-10 md:px-10">
+        <div class="space-y-4 text-foreground">
+          <p class="leading-relaxed text-lg md:text-xl">
+            We believe that you are not an accident. You are God breathed,
+            intended by God, created for and through Him. God put you on this
+            earth to make a difference, there is a purpose and a call on your
+            life. But you can only discover that purpose in His presence. Love
+            God, love His people and watch how God will unfold His blessing
+            over your life.
+          </p>
+        </div>
+
+        <div class="mt-5">
+          <a
+            href="/about"
+            class="text-xs font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:text-gold-600"
+          >
+            Learn more about RP →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

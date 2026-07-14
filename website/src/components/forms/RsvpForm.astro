@@ -1,0 +1,167 @@
+---
+import { API_ENDPOINTS } from "../../lib/api";
+
+const formShellClass = "space-y-6 glass-frost rounded-2xl p-8";
+const labelClass = "block text-sm font-medium text-foreground";
+const inputClass =
+  "mt-1 w-full rounded-md border border-border bg-card px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15";
+const textareaClass = `${inputClass} resize-y min-h-[120px]`;
+---
+
+<div id="rsvp-container" data-endpoint={API_ENDPOINTS.rsvp}>
+  <form id="rsvp-form" class={formShellClass}>
+    <div>
+      <h2 class="font-display text-2xl text-foreground">RSVP for Your Visit</h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Let us know you're coming so our hospitality team can greet you personally.
+      </p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+      <div class="space-y-2">
+        <label for="rsvp-name" class={labelClass}>
+          Full name *
+        </label>
+        <input id="rsvp-name" name="name" type="text" required class={inputClass} />
+      </div>
+      <div class="space-y-2">
+        <label for="rsvp-phone" class={labelClass}>
+          Phone number *
+        </label>
+        <input
+          id="rsvp-phone"
+          name="phone"
+          type="tel"
+          required
+          placeholder="+254..."
+          class={inputClass}
+        />
+      </div>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+      <div class="space-y-2">
+        <label for="rsvp-email" class={labelClass}>Email (optional)</label>
+        <input id="rsvp-email" name="email" type="email" class={inputClass} />
+      </div>
+      <div class="space-y-2">
+        <label for="rsvp-party" class={labelClass}>Number of people</label>
+        <input
+          id="rsvp-party"
+          name="partySize"
+          type="number"
+          min="1"
+          max="20"
+          value="1"
+          class={inputClass}
+        />
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <label for="rsvp-date" class={labelClass}>
+        Which Sunday are you planning to visit?
+      </label>
+      <input id="rsvp-date" name="visitDate" type="date" class={inputClass} />
+    </div>
+
+    <label class="flex items-start gap-3">
+      <input
+        type="checkbox"
+        name="firstVisit"
+        checked
+        class="mt-1 rounded border-border text-primary focus:ring-primary"
+      />
+      <span class="text-sm text-muted-foreground">
+        This is my first visit to Royal Priesthood Embassy
+      </span>
+    </label>
+
+    <div class="space-y-2">
+      <label for="rsvp-notes" class={labelClass}>
+        Anything we should know? (optional)
+      </label>
+      <textarea
+        id="rsvp-notes"
+        name="notes"
+        rows="3"
+        placeholder="Children joining, accessibility needs, etc."
+        class={textareaClass}
+      ></textarea>
+    </div>
+
+    <button
+      type="submit"
+      class="btn-primary-gold w-full rounded-md px-6 py-3 text-sm font-semibold text-white"
+    >
+      Confirm RSVP
+    </button>
+
+    <p data-error class="hidden text-sm text-rp-danger" role="alert"></p>
+  </form>
+
+  <div id="rsvp-success" class="hidden text-center">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rp-success/10 text-rp-success">
+      ✓
+    </div>
+    <h2 class="font-display mt-4 text-2xl text-foreground">You're on the list!</h2>
+    <p class="mt-2 text-muted-foreground">
+      Our hospitality team has received your RSVP and will prepare a warm welcome for you.
+    </p>
+    <button
+      id="reset-rsvp"
+      type="button"
+      class="btn-primary-gold mt-6 rounded-md px-6 py-3 text-sm font-semibold text-white"
+    >
+      Submit another RSVP
+    </button>
+  </div>
+</div>
+
+<script>
+  const container = document.getElementById("rsvp-container");
+  const form = document.getElementById("rsvp-form") as HTMLFormElement | null;
+  const successState = document.getElementById("rsvp-success") as HTMLElement | null;
+  const resetBtn = document.getElementById("reset-rsvp") as HTMLButtonElement | null;
+  
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = form.querySelector("[data-error]") as HTMLElement;
+    err.className = "hidden text-sm text-rp-danger";
+    const data = Object.fromEntries(new FormData(form));
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      partySize: Number(data.partySize) || 1,
+      firstVisit: data.firstVisit === "on",
+      visitDate: data.visitDate || undefined,
+      notes: data.notes || undefined,
+    };
+    const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+    try {
+      const res = await fetch((container as HTMLElement).dataset.endpoint!, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? "Failed to submit RSVP");
+      form.classList.add("hidden");
+      successState?.classList.remove("hidden");
+    } catch (errMsg) {
+      err.className = "text-sm text-rp-danger";
+      err.textContent = errMsg instanceof Error ? errMsg.message : "Something went wrong. Please contact us directly.";
+      btn.disabled = false;
+      btn.textContent = "Confirm RSVP";
+    }
+  });
+  
+  resetBtn?.addEventListener("click", () => {
+    form?.classList.remove("hidden");
+    successState?.classList.add("hidden");
+    form?.reset();
+  });
+</script>

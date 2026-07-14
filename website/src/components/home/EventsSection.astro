@@ -1,0 +1,70 @@
+---
+import type { EventView } from "../../types";
+import { formatEventDate } from "../../lib/format";
+
+interface Props {
+  events: EventView[];
+}
+
+const { events = [] }: Props = Astro.props;
+---
+
+<section class="register-warm section-padding">
+  <div class="mx-auto max-w-7xl px-5 md:px-8">
+    <div class="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between" data-reveal data-reveal-y="24" data-reveal-duration="0.5">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300">
+          Mark Your Calendar
+        </p>
+        <h2 class="font-display mt-2 text-3xl text-ivory-25 md:text-4xl">
+          Upcoming Events
+        </h2>
+      </div>
+      <a
+        href="/events"
+        class="text-sm font-semibold text-gold-300 transition-colors hover:text-gold-200"
+      >
+        View All →
+      </a>
+    </div>
+    {events.length > 0 ? (
+      <div class="grid gap-8 md:grid-cols-3" data-reveal data-reveal-y="30" data-reveal-stagger>
+        {events.map((event) => (
+      <a
+        href={`/events/${event.slug}`}
+        class="group block"
+      >
+            <article class="card-hover">
+              <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                {event.status === "ongoing" && (
+                  <span class="absolute left-3 top-3 rounded-full bg-fire-500 px-3 py-1 text-xs font-semibold text-white">
+                    Ongoing
+                  </span>
+                )}
+              </div>
+              <div class="mt-5 space-y-2">
+                <p class="text-sm text-muted-foreground">{formatEventDate(event.date)}</p>
+                <h3 class="font-display text-xl text-foreground group-hover:text-primary">
+                  {event.title}
+                </h3>
+                <p class="text-sm text-muted-foreground">{event.location}</p>
+              </div>
+            </article>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="text-ivory-200/70">No upcoming events at this time.</p>
+    )}
+    <div class="mt-12 text-center">
+      <a href="/events" class="inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border border-white/30 bg-transparent text-white hover:bg-white/10 px-6 py-3">
+        View All Events
+      </a>
+    </div>
+  </div>
+</section>

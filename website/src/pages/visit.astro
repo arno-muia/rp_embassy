@@ -1,0 +1,170 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import ServiceTimesGrid from "../components/shared/ServiceTimesGrid.astro";
+import FaqAccordion from "../components/content/FaqAccordion.astro";
+import RsvpForm from "../components/forms/RsvpForm.astro";
+import Button from "../components/ui/Button.astro";
+import { getSiteConfig } from "../lib/api";
+import { images, site } from "../lib/site";
+
+const iconMap: Record<string, string> = {
+  music: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  "book-open": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  users: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  "trending-up": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+};
+
+const config = await getSiteConfig();
+const MAP_EMBED =
+  "https://maps.google.com/maps?q=Voice+of+Grace+Behind+Spoonzoom+Thika+Kenya&output=embed";
+
+const visitSteps = [
+  { step: "Arrive", desc: "Our hospitality team will greet you at the door and help you find a seat." },
+  { step: "Worship", desc: "Experience authentic, Spirit-led worship that draws you into God's presence." },
+  { step: "Teaching", desc: "Receive practical, Bible-based teaching on your royal identity in Christ." },
+  { step: "Community", desc: "Connect with others after service — we'd love to meet you personally." },
+];
+---
+
+<Layout
+  title="Plan Your Visit"
+  description="Plan your visit to Royal Priesthood Embassy in Thika."
+>
+  <PageHero
+    title="You're Welcome Here"
+    subtitle="Everything you need to know for your first visit to Royal Priesthood Embassy in Thika, Kenya."
+    register="warm"
+  />
+
+  {
+    config?.serviceTimes && config.serviceTimes.length > 0 && (
+      <section class="register-celestial section-padding">
+        <div class="mx-auto max-w-7xl px-5 md:px-8">
+          <div class="mb-12 text-center" data-reveal data-reveal-y="24">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Join Us
+            </p>
+            <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">
+              Service Times
+            </h2>
+          </div>
+          <ServiceTimesGrid services={config.serviceTimes} />
+        </div>
+      </section>
+    )
+  }
+
+  <section class="register-parchment section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div>
+          <div class="relative aspect-[4/3] overflow-hidden rounded-xl border border-border">
+            <img
+              src={images.visitWelcome}
+              alt="Royal Priesthood Embassy community gathering in Thika"
+              class="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+        <div>
+          <h2 class="font-display text-3xl text-foreground md:text-4xl">Location</h2>
+          <p class="mt-4 text-lg font-semibold text-foreground">
+            {site.address.street}
+            <br />
+            {site.address.city}, {site.address.country}
+          </p>
+          <p class="mt-4 text-muted-foreground">
+            We meet at Voice of Grace, behind Spoonzoom in Thika. Look for the
+            hospitality team at the entrance — they will guide you to parking
+            and seating.
+          </p>
+          <Button href={site.address.mapsUrl} variant="primary" external class="mt-6">
+            Get Directions
+          </Button>
+        </div>
+      </div>
+      <div class="mt-10 overflow-hidden rounded-xl border border-primary/20">
+        <iframe
+          src={MAP_EMBED}
+          width="100%"
+          height="400"
+          style="border:0"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Royal Priesthood Embassy location map"
+          class="aspect-video w-full"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="register-parchment section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <div class="mb-12 text-center" data-reveal data-reveal-y="24">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">First Visit?</p>
+        <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">What to Expect</h2>
+      </div>
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4" data-reveal data-reveal-stagger="0.15" data-reveal-y="30">
+        {
+          visitSteps.map((item, i) => {
+            const icons = ["music", "book-open", "users", "trending-up"];
+            const iconSvg = iconMap[icons[i] ?? "users"] ?? iconMap.users;
+            return (
+              <article class="card-hover glass-frost rounded-xl p-6 text-center">
+                <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full glass-gold">
+                  <div set:html={iconSvg} />
+                </div>
+                <h3 class="font-display text-lg text-foreground">{item.step}</h3>
+                <p class="mt-2 text-sm text-muted-foreground">{item.desc}</p>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    config?.visitFaqs && config.visitFaqs.length > 0 && (
+      <section class="register-parchment section-padding">
+        <div class="mx-auto max-w-4xl px-5 md:px-8">
+          <div class="text-center" data-reveal data-reveal-y="24">
+            <h2 class="font-display text-3xl text-foreground md:text-4xl">
+              Frequently Asked Questions
+            </h2>
+          </div>
+          <div class="mt-10">
+            <FaqAccordion faqs={config.visitFaqs} />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section id="rsvp" class="register-celestial section-padding">
+    <div class="mx-auto max-w-xl px-5 md:px-8">
+      <RsvpForm />
+    </div>
+  </section>
+
+  <section class="section-padding">
+    <div
+      class="glass-gold mx-auto max-w-2xl rounded-2xl px-5 py-12 text-center md:px-8"
+    >
+      <h2 class="font-display text-3xl text-foreground md:text-4xl">
+        I'm Coming This Sunday
+      </h2>
+      <p class="mt-4 text-muted-foreground">
+        Questions before you visit? Reach out — we're happy to help.
+      </p>
+      <div
+        class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+      >
+        <Button href="#rsvp" variant="primary">Submit RSVP</Button>
+        <Button href="/contact" variant="secondary">Contact Us</Button>
+      </div>
+    </div>
+  </section>
+</Layout>

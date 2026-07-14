@@ -1,0 +1,51 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHero from "../../components/shared/PageHero.astro";
+import SermonCard from "../../components/content/SermonCard.astro";
+
+import { getSeriesBySlug, getSermonsBySeries, getSeries } from "../../lib/api";
+
+
+export async function getStaticPaths() {
+  try {
+    const series = await getSeries();
+    return series.map((s) => ({ params: { slug: s.slug } }));
+  } catch {
+    return [];
+  }
+}
+
+const { slug } = Astro.params;
+const series = slug ? await getSeriesBySlug(slug) : undefined;
+
+if (!series) return Astro.redirect("/series");
+
+const sermons = await getSermonsBySeries(slug!);
+---
+
+<Layout title={series.title} description={series.description}>
+  <PageHero
+    title={series.title}
+    subtitle={series.description}
+    register="parchment"
+  />
+
+  <section class="register-celestial section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      {
+        sermons.length > 0 ? (
+          <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {sermons.map((sermon) => (
+              <SermonCard sermon={sermon} />
+            ))}
+          </div>
+        ) : (
+          <p class="text-center text-muted-foreground">
+            Sermons in this series are being added. Check back soon or browse our
+            full library.
+          </p>
+        )
+      }
+    </div>
+  </section>
+</Layout>

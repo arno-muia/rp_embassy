@@ -1,0 +1,31 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LoginForm from "../components/forms/LoginForm.astro";
+import { site } from "../lib/site";
+---
+
+<Layout title="Sign In" description="Members and staff sign in portal.">
+  <div class="flex min-h-[70vh] items-center justify-center px-5 py-16">
+    <div class="glass-frost w-full max-w-md space-y-6 rounded-2xl p-8">
+      <div class="text-center">
+        <img
+          src="/rp-logo.svg"
+          alt={site.name}
+          width="200"
+          height="52"
+          class="mx-auto h-12 w-auto"
+        />
+        <h1 class="font-display mt-6 text-3xl text-foreground">Sign In</h1>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Members and staff — access your portal, giving history, and more.
+        </p>
+      </div>
+      <LoginForm />
+      <p class="text-center text-sm text-muted-foreground">
+        <a href="/" class="text-primary transition-colors hover:text-gold-600">
+          ← Back to website
+        </a>
+      </p>
+    </div>
+  </div>
+</Layout>
