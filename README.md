@@ -160,12 +160,12 @@ The site will be available at `http://localhost:4321`.
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
-| `DJANGO_SECRET_KEY` | Yes (prod) | hardcoded dev key | Signs sessions / tokens |
+| `DJANGO_SECRET_KEY` | Yes (prod) | `<generate-with-django-secret-key>` | Signs sessions / tokens |
 | `DJANGO_DEBUG` | Yes | `True` | Debug mode toggle (set `False` in prod) |
 | `DB_ENGINE` | No | `postgresql` | `django.db.backends.postgresql` or `sqlite3` |
 | `DB_NAME` | No | `RP` | Database name |
 | `DB_USER` | No | `postgres` | Database user |
-| `DB_PASSWORD` | No | `arno` | Database password |
+| `DB_PASSWORD` | No | `<your-db-password>` | Database password |
 | `DB_HOST` | No | `localhost` | Database host |
 | `DB_PORT` | No | `5432` | Database port |
 
