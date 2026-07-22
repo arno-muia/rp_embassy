@@ -98,6 +98,44 @@ RP/
 
 ## Backend Setup (Django API)
 
+### PostgreSQL Setup Requirements
+
+Before starting the backend, ensure PostgreSQL is installed and configured:
+
+1. Install PostgreSQL 14+ on your system
+2. Create a database named `RP`:
+   ```sql
+   CREATE DATABASE RP;
+   ```
+3. Ensure the default user `postgres` has password access or create a custom user with appropriate privileges
+
+### Django Admin Access
+
+The Django Admin interface is available at `http://127.0.0.1:8000/admin/` after starting the server. To create an admin user:
+
+```bash
+python manage.py createsuperuser
+```
+
+### Environment Variable Requirements
+
+Set the following environment variables before running:
+
+```bash
+# Required for production
+export DJANGO_SECRET_KEY="your-secret-key"
+export DJANGO_DEBUG="True"  # Set to "False" for production
+
+# Optional PostgreSQL configuration
+export DB_NAME="RP"
+export DB_USER="postgres"
+export DB_PASSWORD="your-password"
+export DB_HOST="localhost"
+export DB_PORT="5432"
+```
+
+### Startup Instructions
+
 ```bash
 cd backend
 
@@ -107,10 +145,6 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install django djangorestframework django-cors-headers psycopg2-binary
-
-# Configure environment (see Environment Variables below)
-export DJANGO_SECRET_KEY="your-secret-key"
-export DJANGO_DEBUG="True"
 
 # Apply migrations
 python manage.py migrate
@@ -129,6 +163,8 @@ The API will be available at `http://127.0.0.1:8000/` and the admin at `http://1
 ---
 
 ## Frontend Setup (Astro Site)
+
+### Astro Startup Instructions
 
 ```bash
 cd website
@@ -339,6 +375,34 @@ The `docs/` directory contains detailed phase, migration, and audit reports gene
 
 ---
 
+## Team Onboarding
+
+### Getting Started
+
+1. **Clone the repository** and navigate to the `RP/` directory
+2. **Set up the backend** following the [Backend Setup](#backend-setup-django-api) instructions
+3. **Set up the frontend** following the [Frontend Setup](#frontend-setup-astro-site) instructions
+4. **Verify the setup** by running both servers and accessing:
+   - Site: `http://localhost:4321`
+   - API health: `http://127.0.0.1:8000/api/health`
+   - Admin: `http://127.0.0.1:8000/admin/`
+
+### Key Resources
+
+- **Architecture Documentation**: See `ARCHITECTURE.md` for detailed system design
+- **API Contracts**: Review the API Reference section for available endpoints
+- **Content Management**: Use Django Admin to manage sermons, events, leaders, and other content
+- **Styling Guide**: Tailwind CSS v4 with utility classes for component styling
+
+### Development Workflow
+
+1. Create feature branches from `main`
+2. Follow [Conventional Commits](https://www.conventionalcommits.org) for commit messages
+3. Test changes locally with both frontend and backend running
+4. Submit pull requests to `main` for review
+
+---
+
 ## Contributing
 
 This is a private repository managed by the Royal Priesthood Tech team.
@@ -359,3 +423,10 @@ feat(content): add sermon detail page
 fix(events): correct event timezone handling
 docs(api): document prayer endpoint
 refactor(backend): simplify content repository
+```
+
+---
+
+## Legacy Components
+
+Some historical repository components remain for archival purposes and are not part of the active platform architecture.

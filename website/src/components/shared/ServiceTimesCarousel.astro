@@ -1,0 +1,128 @@
+---
+import type { SiteConfig } from "../../lib/api";
+
+interface Props {
+  services: NonNullable<SiteConfig["serviceTimes"]>;
+}
+
+const { services }: Props = Astro.props;
+---
+
+<div data-reveal data-reveal-y="30" data-reveal-duration="0.6">
+  <script set:html={`const services = ${JSON.stringify(services)};`}></script>
+  
+  <!-- Carousel Container -->
+  <div class="relative">
+    <!-- Carousel Track -->
+    <div 
+      id="service-carousel" 
+      class="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+      style="scrollbar-width: none; -ms-overflow-style: none;"
+    >
+      <!-- Carousel items injected by client script -->
+    </div>
+
+    <!-- Navigation Buttons -->
+    <button
+      id="carousel-prev"
+      class="absolute -left-6 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-white/80"
+      aria-label="Previous"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-black"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button
+      id="carousel-next"
+      class="absolute -right-6 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-white/80"
+      aria-label="Next"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-black"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  function renderCarousel() {
+    const carousel = document.getElementById('service-carousel');
+    if (!carousel) return;
+
+    let carouselHTML = '';
+    
+    services.forEach((service) => {
+      carouselHTML += `
+        <div 
+          class="flex-shrink-0 w-[300px] snap-start"
+          style="min-width: 300px;"
+        >
+          <article class="card-hover overflow-hidden rounded-xl glass-frost h-full">
+            ${service.image ? `
+              <div class="relative aspect-[16/9] w-full">
+                <img
+                  src="${service.image}"
+                  alt="${service.name}"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+            ` : ''}
+            <div class="border-t border-border p-5">
+              <div class="mb-3 flex items-start justify-between">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-primary">
+                    ${service.day} · ${service.time}
+                  </p>
+                  <h3 class="mt-1 font-display text-lg text-foreground">
+                    ${service.name}
+                  </h3>
+                </div>
+                ${service.platform === "online" ? `
+                  <span class="text-primary" aria-label="Online service">🖥️</span>
+                ` : `
+                  <span class="text-primary" aria-label="Physical service">📍</span>
+                `}
+              </div>
+              ${service.location ? `
+                <p class="text-sm font-medium text-foreground">
+                  ${service.location}
+                </p>
+              ` : ''}
+              ${service.description ? `
+                <p class="mt-2 text-sm text-muted-foreground">
+                  ${service.description}
+                </p>
+              ` : ''}
+              ${service.link ? `
+                <a
+                  href="${service.link}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-4 inline-block text-sm font-semibold text-primary transition-colors hover:text-gold-600"
+                >
+                  Join Online →
+                </a>
+              ` : ''}
+            </div>
+          </article>
+        </div>
+      `;
+    });
+
+    carousel.innerHTML = carouselHTML;
+  }
+
+  // Initial render
+  renderCarousel();
+
+  // Navigation functionality
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+  const carousel = document.getElementById('service-carousel');
+  
+  if (prevBtn && nextBtn && carousel) {
+    prevBtn.addEventListener('click', () => {
+      carousel.scrollBy({ left: -300, behavior: 'smooth' });
+    });
+    
+    nextBtn.addEventListener('click', () => {
+      carousel.scrollBy({ left: 300, behavior: 'smooth' });
+    });
+  }
+</script>

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'backend.apps.events',
     'backend.apps.giving',
     'backend.apps.prayer',
+    'backend.apps.media',
 ]
 
 MIDDLEWARE = [
@@ -90,7 +91,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use SQLite for development (fallback if PostgreSQL unavailable)
+
 
 
 # Password validation

@@ -2,12 +2,20 @@
 
 Source of truth: apps/web/prisma/schema.prisma (SystemConfig, SermonSeries,
 PublicSermon, WebsiteLeader, WebsiteTestimonial, WebsiteAcademyModule,
-ContactSubmission, VisitRsvp). All models use managed = False and exact db_table names.
+ContactSubmission, VisitRsvp). All legacy models use managed = False and
+exact db_table names.
 """
 
 import uuid
 
 from django.db import models
+
+from .workflow import WorkflowStatus
+
+
+# =============================================================================
+# LEGACY PRISMA-OWNED MODELS (managed=False)
+# =============================================================================
 
 
 class SystemConfig(models.Model):
@@ -29,7 +37,7 @@ class SystemConfig(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'SystemConfig'
         indexes = [
             models.Index(fields=['key'], name='syscfg_key_idx'),
@@ -54,7 +62,7 @@ class SermonSeries(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'SermonSeries'
         indexes = [
             models.Index(fields=['is_published'], name='series_ispub_idx'),
@@ -97,7 +105,7 @@ class PublicSermon(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'PublicSermon'
         indexes = [
             models.Index(fields=['series_slug'], name='sermon_serislug_idx'),
@@ -124,7 +132,7 @@ class WebsiteLeader(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'WebsiteLeader'
         indexes = [
             models.Index(fields=['sort_order'], name='leader_sort_idx'),
@@ -148,7 +156,7 @@ class WebsiteTestimonial(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'WebsiteTestimonial'
         indexes = [
             models.Index(fields=['sort_order'], name='testi_sort_idx'),
@@ -173,7 +181,7 @@ class WebsiteAcademyModule(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'WebsiteAcademyModule'
         indexes = [
             models.Index(fields=['sort_order'], name='academy_sort_idx'),
@@ -194,7 +202,7 @@ class ContactSubmission(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_column='createdAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'ContactSubmission'
         indexes = [
             models.Index(fields=['created_at'], name='contactsub_creat_idx'),
@@ -219,7 +227,7 @@ class VisitRsvp(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_column='createdAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'VisitRsvp'
         indexes = [
             models.Index(fields=['created_at'], name='rsvp_created_idx'),
@@ -228,3 +236,174 @@ class VisitRsvp(models.Model):
 
     def __str__(self) -> str:
         return f'RSVP {self.name}'
+
+
+# =============================================================================
+# DJANGO-OWNED CMS MODELS (managed=True)
+# =============================================================================
+
+
+class GlobalSettings(models.Model):
+    """Church-wide operational settings. Singleton pattern enforced at app level."""
+
+    church_name = models.CharField(max_length=255)
+    church_short_name = models.CharField(max_length=64, null=True, blank=True)
+    email = models.EmailField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=64, null=True, blank=True)
+    whatsapp = models.CharField(max_length=64, null=True, blank=True)
+    address = models.CharField(max_length=512, null=True, blank=True)
+    city = models.CharField(max_length=128, null=True, blank=True)
+    country = models.CharField(max_length=128, null=True, blank=True)
+    mpesa_till = models.CharField(max_length=32, null=True, blank=True)
+    mpesa_paybill = models.CharField(max_length=32, null=True, blank=True)
+    social_links = models.JSONField(default=dict, blank=True)
+    academy_url = models.URLField(max_length=512, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Global Settings'
+        verbose_name_plural = 'Global Settings'
+
+    def __str__(self) -> str:
+        return self.church_name
+
+
+class HomepageSettings(models.Model):
+    """Homepage hero configuration. Singleton pattern enforced at app level."""
+
+    hero_title = models.CharField(max_length=255, null=True, blank=True)
+    hero_subtitle = models.CharField(max_length=512, null=True, blank=True)
+    hero_scripture = models.TextField(null=True, blank=True)
+    hero_scripture_reference = models.CharField(max_length=128, null=True, blank=True)
+    hero_background_image = models.URLField(max_length=512, null=True, blank=True)
+    hero_cta_text = models.CharField(max_length=128, null=True, blank=True)
+    hero_cta_url = models.URLField(max_length=512, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Homepage Settings'
+        verbose_name_plural = 'Homepage Settings'
+
+    def __str__(self) -> str:
+        return 'Homepage Settings'
+
+
+class ChurchProfile(models.Model):
+    """Church identity and narrative. Singleton pattern enforced at app level."""
+
+    mission = models.TextField(null=True, blank=True)
+    vision = models.TextField(null=True, blank=True)
+    welcome_message = models.TextField(null=True, blank=True)
+    pastor_message = models.TextField(null=True, blank=True)
+    about_text = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Church Profile'
+        verbose_name_plural = 'Church Profile'
+
+    def __str__(self) -> str:
+        return 'Church Profile'
+
+
+class ContentType(models.TextChoices):
+    """ContentBlock category choices for low-frequency content."""
+    BELIEF = 'BELIEF', 'Belief'
+    VALUE = 'VALUE', 'Value'
+    FAQ = 'FAQ', 'Frequently Asked Question'
+    EXPECTATION = 'EXPECTATION', 'What to Expect'
+    PAGE_SECTION = 'PAGE_SECTION', 'Page Section Copy'
+    THEME = 'THEME', 'Annual Theme'
+
+
+class ContentBlock(models.Model):
+    """Replace excessive low-frequency models with categorized content blocks."""
+
+    key = models.CharField(max_length=128, unique=True)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    content_type = models.CharField(
+        max_length=20,
+        choices=ContentType.choices,
+        default=ContentType.PAGE_SECTION,
+        db_index=True,
+    )
+    display_order = models.IntegerField(default=0)
+    is_rich_text = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Content Block'
+        verbose_name_plural = 'Content Blocks'
+        indexes = [
+            models.Index(fields=['key'], name='contentblock_key_idx'),
+            models.Index(fields=['content_type'], name='contentblock_type_idx'),
+            models.Index(fields=['display_order'], name='contentblock_order_idx'),
+        ]
+
+    def __str__(self) -> str:
+        return self.key
+
+
+class HomepageSection(models.Model):
+    """Future-ready homepage section visibility and ordering control."""
+
+    section_name = models.CharField(max_length=128, unique=True)
+    enabled = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Homepage Section'
+        verbose_name_plural = 'Homepage Sections'
+        indexes = [
+            models.Index(fields=['display_order'], name='homesection_order_idx'),
+            models.Index(fields=['enabled'], name='homesection_enabled_idx'),
+        ]
+
+    def __str__(self) -> str:
+        return self.section_name
+
+
+class DayOfWeek(models.TextChoices):
+    MONDAY = 'MONDAY', 'Monday'
+    TUESDAY = 'TUESDAY', 'Tuesday'
+    WEDNESDAY = 'WEDNESDAY', 'Wednesday'
+    THURSDAY = 'THURSDAY', 'Thursday'
+    FRIDAY = 'FRIDAY', 'Friday'
+    SATURDAY = 'SATURDAY', 'Saturday'
+    SUNDAY = 'SUNDAY', 'Sunday'
+
+
+class ServiceTime(models.Model):
+    """Service time entries with display ordering."""
+
+    day = models.CharField(max_length=12, choices=DayOfWeek.choices)
+    time = models.TimeField()
+    label = models.CharField(max_length=128)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Service Time'
+        verbose_name_plural = 'Service Times'
+        indexes = [
+            models.Index(fields=['display_order'], name='servicetime_order_idx'),
+            models.Index(fields=['day'], name='servicetime_day_idx'),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.get_day_display()} {self.time} — {self.label}'

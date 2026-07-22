@@ -1,0 +1,282 @@
+import uuid
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='ContactSubmission',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=255)),
+                ('email', models.CharField(max_length=255)),
+                ('phone', models.CharField(blank=True, max_length=64, null=True)),
+                ('message', models.TextField()),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+            ],
+            options={
+                'db_table': 'ContactSubmission',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='PublicSermon',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('slug', models.CharField(max_length=255, unique=True)),
+                ('title', models.CharField(max_length=255)),
+                ('description', models.TextField()),
+                ('series_slug', models.CharField(db_column='seriesSlug', max_length=255)),
+                ('series_title', models.CharField(db_column='seriesTitle', max_length=255)),
+                ('scripture', models.CharField(blank=True, max_length=255, null=True)),
+                ('speaker', models.CharField(max_length=255)),
+                ('date', models.DateTimeField()),
+                ('video_url', models.CharField(db_column='videoUrl', max_length=512)),
+                ('audio_url', models.CharField(blank=True, db_column='audioUrl', max_length=512, null=True)),
+                ('notes_url', models.CharField(blank=True, db_column='notesUrl', max_length=512, null=True)),
+                ('thumbnail_url', models.CharField(db_column='thumbnailUrl', max_length=512)),
+                ('duration', models.CharField(blank=True, max_length=64, null=True)),
+                ('tags', models.JSONField(default=list)),
+                ('is_published', models.BooleanField(db_column='isPublished', default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+                ('updated_at', models.DateTimeField(auto_now=True, db_column='updatedAt')),
+            ],
+            options={
+                'db_table': 'PublicSermon',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='SermonSeries',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('slug', models.CharField(max_length=255, unique=True)),
+                ('title', models.CharField(max_length=255)),
+                ('description', models.TextField()),
+                ('image_url', models.CharField(db_column='imageUrl', max_length=512)),
+                ('sermon_count', models.IntegerField(db_column='sermonCount', default=0)),
+                ('sort_order', models.IntegerField(db_column='sortOrder', default=0)),
+                ('is_published', models.BooleanField(db_column='isPublished', default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+                ('updated_at', models.DateTimeField(auto_now=True, db_column='updatedAt')),
+            ],
+            options={
+                'db_table': 'SermonSeries',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='SystemConfig',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('key', models.CharField(max_length=255, unique=True)),
+                ('value', models.JSONField()),
+                ('description', models.CharField(blank=True, max_length=2000, null=True)),
+                ('updated_at', models.DateTimeField(auto_now=True, db_column='updatedAt')),
+            ],
+            options={
+                'db_table': 'SystemConfig',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='VisitRsvp',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=255)),
+                ('phone', models.CharField(max_length=64)),
+                ('email', models.CharField(blank=True, max_length=255, null=True)),
+                ('party_size', models.IntegerField(db_column='partySize', default=1)),
+                ('first_visit', models.BooleanField(db_column='firstVisit', default=True)),
+                ('visit_date', models.DateTimeField(blank=True, db_column='visitDate', null=True)),
+                ('notes', models.TextField(blank=True, null=True)),
+                ('status', models.CharField(default='PENDING', max_length=32)),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+            ],
+            options={
+                'db_table': 'VisitRsvp',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='WebsiteAcademyModule',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('title', models.CharField(max_length=255)),
+                ('description', models.TextField()),
+                ('instructor', models.CharField(max_length=255)),
+                ('lessons_count', models.IntegerField(db_column='lessonsCount')),
+                ('duration', models.CharField(max_length=64)),
+                ('sort_order', models.IntegerField(db_column='sortOrder', default=0)),
+                ('is_published', models.BooleanField(db_column='isPublished', default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+                ('updated_at', models.DateTimeField(auto_now=True, db_column='updatedAt')),
+            ],
+            options={
+                'db_table': 'WebsiteAcademyModule',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='WebsiteLeader',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=255)),
+                ('role', models.CharField(max_length=255)),
+                ('bio', models.TextField()),
+                ('photo_url', models.CharField(db_column='photoUrl', max_length=512)),
+                ('sort_order', models.IntegerField(db_column='sortOrder', default=0)),
+                ('social', models.JSONField(blank=True, null=True)),
+                ('is_published', models.BooleanField(db_column='isPublished', default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+                ('updated_at', models.DateTimeField(auto_now=True, db_column='updatedAt')),
+            ],
+            options={
+                'db_table': 'WebsiteLeader',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='WebsiteTestimonial',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('quote', models.TextField()),
+                ('name', models.CharField(max_length=255)),
+                ('role', models.CharField(blank=True, max_length=255, null=True)),
+                ('photo_url', models.CharField(blank=True, db_column='photoUrl', max_length=512, null=True)),
+                ('sort_order', models.IntegerField(db_column='sortOrder', default=0)),
+                ('is_published', models.BooleanField(db_column='isPublished', default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True, db_column='createdAt')),
+                ('updated_at', models.DateTimeField(auto_now=True, db_column='updatedAt')),
+            ],
+            options={
+                'db_table': 'WebsiteTestimonial',
+                'managed': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='ChurchProfile',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('mission', models.TextField(blank=True, null=True)),
+                ('vision', models.TextField(blank=True, null=True)),
+                ('welcome_message', models.TextField(blank=True, null=True)),
+                ('pastor_message', models.TextField(blank=True, null=True)),
+                ('about_text', models.TextField(blank=True, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Church Profile',
+                'verbose_name_plural': 'Church Profile',
+                'managed': True,
+            },
+        ),
+        migrations.CreateModel(
+            name='GlobalSettings',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('church_name', models.CharField(max_length=255)),
+                ('church_short_name', models.CharField(blank=True, max_length=64, null=True)),
+                ('email', models.EmailField(blank=True, max_length=255, null=True)),
+                ('phone', models.CharField(blank=True, max_length=64, null=True)),
+                ('whatsapp', models.CharField(blank=True, max_length=64, null=True)),
+                ('address', models.CharField(blank=True, max_length=512, null=True)),
+                ('city', models.CharField(blank=True, max_length=128, null=True)),
+                ('country', models.CharField(blank=True, max_length=128, null=True)),
+                ('mpesa_till', models.CharField(blank=True, max_length=32, null=True)),
+                ('mpesa_paybill', models.CharField(blank=True, max_length=32, null=True)),
+                ('social_links', models.JSONField(blank=True, default=dict)),
+                ('academy_url', models.URLField(blank=True, max_length=512, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Global Settings',
+                'verbose_name_plural': 'Global Settings',
+                'managed': True,
+            },
+        ),
+        migrations.CreateModel(
+            name='HomepageSettings',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('hero_title', models.CharField(blank=True, max_length=255, null=True)),
+                ('hero_subtitle', models.CharField(blank=True, max_length=512, null=True)),
+                ('hero_scripture', models.TextField(blank=True, null=True)),
+                ('hero_scripture_reference', models.CharField(blank=True, max_length=128, null=True)),
+                ('hero_background_image', models.URLField(blank=True, max_length=512, null=True)),
+                ('hero_cta_text', models.CharField(blank=True, max_length=128, null=True)),
+                ('hero_cta_url', models.URLField(blank=True, max_length=512, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Homepage Settings',
+                'verbose_name_plural': 'Homepage Settings',
+                'managed': True,
+            },
+        ),
+        migrations.CreateModel(
+            name='ContentBlock',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('key', models.CharField(max_length=128, unique=True)),
+                ('title', models.CharField(max_length=255)),
+                ('content', models.TextField()),
+                ('content_type', models.CharField(choices=[('BELIEF', 'Belief'), ('VALUE', 'Value'), ('FAQ', 'Frequently Asked Question'), ('EXPECTATION', 'What to Expect'), ('PAGE_SECTION', 'Page Section Copy'), ('THEME', 'Annual Theme')], db_index=True, default='PAGE_SECTION', max_length=20)),
+                ('display_order', models.IntegerField(default=0)),
+                ('is_rich_text', models.BooleanField(default=False)),
+                ('is_active', models.BooleanField(default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Content Block',
+                'verbose_name_plural': 'Content Blocks',
+                'managed': True,
+                'indexes': [models.Index(fields=['key'], name='contentblock_key_idx'), models.Index(fields=['content_type'], name='contentblock_type_idx'), models.Index(fields=['display_order'], name='contentblock_order_idx')],
+            },
+        ),
+        migrations.CreateModel(
+            name='HomepageSection',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('section_name', models.CharField(max_length=128, unique=True)),
+                ('enabled', models.BooleanField(default=True)),
+                ('display_order', models.IntegerField(default=0)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Homepage Section',
+                'verbose_name_plural': 'Homepage Sections',
+                'managed': True,
+                'indexes': [models.Index(fields=['display_order'], name='homesection_order_idx'), models.Index(fields=['enabled'], name='homesection_enabled_idx')],
+            },
+        ),
+        migrations.CreateModel(
+            name='ServiceTime',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('day', models.CharField(choices=[('MONDAY', 'Monday'), ('TUESDAY', 'Tuesday'), ('WEDNESDAY', 'Wednesday'), ('THURSDAY', 'Thursday'), ('FRIDAY', 'Friday'), ('SATURDAY', 'Saturday'), ('SUNDAY', 'Sunday')], max_length=12)),
+                ('time', models.TimeField()),
+                ('label', models.CharField(max_length=128)),
+                ('display_order', models.IntegerField(default=0)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Service Time',
+                'verbose_name_plural': 'Service Times',
+                'managed': True,
+                'indexes': [models.Index(fields=['display_order'], name='servicetime_order_idx'), models.Index(fields=['day'], name='servicetime_day_idx')],
+            },
+        ),
+    ]

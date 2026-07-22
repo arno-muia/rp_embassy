@@ -1,12 +1,20 @@
 """Events domain models — mapped 1:1 to PostgreSQL.
 
 Source of truth: apps/web/prisma/schema.prisma (ChurchEvent, EventRegistration).
-All models use managed = False and exact db_table names.
+All legacy models use managed = False and exact db_table names.
+New Django-owned models use managed = True.
 """
 
 import uuid
 
 from django.db import models
+
+from backend.apps.content.workflow import WorkflowStatus, Severity
+
+
+# =============================================================================
+# ENUMS
+# =============================================================================
 
 
 class ChurchEventType(models.TextChoices):
@@ -29,6 +37,11 @@ class PaymentStatus(models.TextChoices):
     PENDING = 'PENDING', 'Pending'
     PAID = 'PAID', 'Paid'
     WAIVED = 'WAIVED', 'Waived'
+
+
+# =============================================================================
+# LEGACY PRISMA-OWNED MODELS (managed=False)
+# =============================================================================
 
 
 class ChurchEvent(models.Model):
@@ -63,7 +76,7 @@ class ChurchEvent(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'ChurchEvent'
         indexes = [
             models.Index(fields=['start_date_time'], name='event_start_idx'),
@@ -108,7 +121,7 @@ class EventRegistration(models.Model):
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'EventRegistration'
         indexes = [
             models.Index(fields=['event'], name='reg_event_idx'),
@@ -118,3 +131,43 @@ class EventRegistration(models.Model):
 
     def __str__(self) -> str:
         return f'Registration {self.id}'
+
+
+# =============================================================================
+# DJANGO-OWNED CMS MODELS (managed=True)
+# =============================================================================
+
+
+class Announcement(models.Model):
+    """Time-windowed, audience-targeted homepage banners with severity levels."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    body = models.TextField(null=True, blank=True)
+    severity = models.CharField(
+        max_length=10, choices=Severity.choices, default=Severity.INFO
+    )
+    workflow_status = models.CharField(
+        max_length=20,
+        choices=WorkflowStatus.choices,
+        default=WorkflowStatus.DRAFT,
+    )
+    display_from = models.DateTimeField(null=True, blank=True)
+    display_until = models.DateTimeField(null=True, blank=True)
+    link_url = models.URLField(max_length=512, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Announcement'
+        verbose_name_plural = 'Announcements'
+        indexes = [
+            models.Index(fields=['is_active', 'display_from'], name='announce_active_idx'),
+            models.Index(fields=['severity'], name='announce_severity_idx'),
+        ]
+
+    def __str__(self) -> str:
+        return self.title

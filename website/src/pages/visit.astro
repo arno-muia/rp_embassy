@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import ServiceTimesGrid from "../components/shared/ServiceTimesGrid.astro";
+import ServiceTimesCarousel from "../components/shared/ServiceTimesCarousel.astro";
 import FaqAccordion from "../components/content/FaqAccordion.astro";
 import RsvpForm from "../components/forms/RsvpForm.astro";
 import Button from "../components/ui/Button.astro";
@@ -41,15 +41,15 @@ const visitSteps = [
     config?.serviceTimes && config.serviceTimes.length > 0 && (
       <section class="register-celestial section-padding">
         <div class="mx-auto max-w-7xl px-5 md:px-8">
-          <div class="mb-12 text-center" data-reveal data-reveal-y="24">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              Join Us
-            </p>
-            <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">
-              Service Times
-            </h2>
-          </div>
-          <ServiceTimesGrid services={config.serviceTimes} />
+        <div class="mb-12 text-center" data-reveal data-reveal-y="24">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Join Us
+          </p>
+          <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">
+            Service Times
+          </h2>
+        </div>
+        <ServiceTimesCarousel services={config.serviceTimes} />
         </div>
       </section>
     )
@@ -154,16 +154,15 @@ const visitSteps = [
       class="glass-gold mx-auto max-w-2xl rounded-2xl px-5 py-12 text-center md:px-8"
     >
       <h2 class="font-display text-3xl text-foreground md:text-4xl">
-        I'm Coming This Sunday
+        I Am Coming This Sunday
       </h2>
       <p class="mt-4 text-muted-foreground">
         Questions before you visit? Reach out — we're happy to help.
       </p>
       <div
-        class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+        class="mt-8 flex justify-center"
       >
-        <Button href="#rsvp" variant="primary">Submit RSVP</Button>
-        <Button href="/contact" variant="secondary">Contact Us</Button>
+        <Button href="#rsvp" variant="primary">Contact Us</Button>
       </div>
     </div>
   </section>
