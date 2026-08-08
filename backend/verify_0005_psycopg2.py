@@ -1,4 +1,7 @@
 import sys
+import os
+from dotenv import load_dotenv
+
 print("Attempting import psycopg2...")
 try:
     import psycopg2
@@ -7,9 +10,15 @@ except Exception as e:
     print("psycopg2 import failed:", e)
     sys.exit(1)
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
 print("Connecting...")
 conn = psycopg2.connect(
-    dbname='RP', user='postgres', password='arno', host='localhost', port='5432'
+    dbname=os.environ.get('DB_NAME'),
+    user=os.environ.get('DB_USER'),
+    password=os.environ.get('DB_PASSWORD'),
+    host=os.environ.get('DB_HOST'),
+    port=os.environ.get('DB_PORT')
 )
 conn.autocommit = True
 cur = conn.cursor()

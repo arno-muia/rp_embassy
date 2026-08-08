@@ -1,12 +1,26 @@
-"""Accounts domain models — mapped 1:1 to the existing PostgreSQL schema.
+"""Accounts domain models.
 
-Source of truth: apps/web/prisma/schema.prisma (User, AuditLog).
-All models use managed = False and exact db_table names.
+The User model is a proper Django authentication model extending
+AbstractBaseUser + PermissionsMixin.  It maps to the existing PostgreSQL
+"User" table (previously Prisma-owned) using db_column aliases so no
+schema rename is required.
+
+AuditLog remains Prisma-owned (managed=False).
 """
 
 import uuid
 
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
+
+
+# =============================================================================
+# Choices
+# =============================================================================
 
 
 class UserRole(models.TextChoices):
@@ -59,26 +73,82 @@ class AuditAction(models.TextChoices):
     COMMUNICATION_SENT = 'COMMUNICATION_SENT', 'Communication Sent'
 
 
-class User(models.Model):
-    """Maps to Prisma model User -> table 'User'."""
+# =============================================================================
+# Manager
+# =============================================================================
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+class UserManager(BaseUserManager):
+    """Custom manager for the User model using email as the username."""
+
+    def create_user(self, email, name, password=None, **extra_fields):
+        """Create and save a regular user with email and password."""
+        if not email:
+            raise ValueError('Users must have an email address.')
+        email = self.normalize_email(email)
+        user = self.model(email=email, name=name, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, name, password=None, **extra_fields):
+        """Create and save a superuser with email and password."""
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', UserRole.ADMIN)
+        extra_fields.setdefault('must_change_password', False)
+
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, name, password, **extra_fields)
+
+
+# =============================================================================
+# User model
+# =============================================================================
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    """Django authentication user model.
+
+    Maps to the existing PostgreSQL ``"User"`` table using db_column
+    aliases.  The ``password`` field maps to the ``passwordHash`` column
+    and uses Django's built-in password hashing (PBKDF2 / bcrypt / argon2).
+    """
+
+    id = models.CharField(primary_key=True, max_length=36, editable=False)
     email = models.CharField(max_length=255, unique=True)
-    password_hash = models.CharField(max_length=255)
+    password = models.CharField(max_length=255, db_column='passwordHash')
     name = models.CharField(max_length=255)
     role = models.CharField(
         max_length=20, choices=UserRole.choices, default=UserRole.MEMBER
     )
     is_active = models.BooleanField(default=True, db_column='isActive')
-    must_change_password = models.BooleanField(default=True, db_column='mustChangePassword')
-    failed_login_attempts = models.IntegerField(default=0, db_column='failedLoginAttempts')
-    locked_until = models.DateTimeField(null=True, blank=True, db_column='lockedUntil')
-    last_login = models.DateTimeField(null=True, blank=True, db_column='lastLogin')
+    is_staff = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(
+        default=True, db_column='mustChangePassword'
+    )
+    failed_login_attempts = models.IntegerField(
+        default=0, db_column='failedLoginAttempts'
+    )
+    locked_until = models.DateTimeField(
+        null=True, blank=True, db_column='lockedUntil'
+    )
+    last_login = models.DateTimeField(
+        null=True, blank=True, db_column='lastLogin'
+    )
     created_at = models.DateTimeField(auto_now_add=True, db_column='createdAt')
     updated_at = models.DateTimeField(auto_now=True, db_column='updatedAt')
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name']
+
+    objects = UserManager()
+
     class Meta:
-        managed = False
+        managed = True
         db_table = 'User'
         indexes = [
             models.Index(fields=['role'], name='user_role_idx'),
@@ -86,6 +156,25 @@ class User(models.Model):
 
     def __str__(self) -> str:
         return self.email
+
+    def get_full_name(self) -> str:
+        return self.name
+
+    def get_short_name(self) -> str:
+        return self.name
+
+
+# =============================================================================
+# AcademyAccess authorization model
+# =============================================================================
+
+
+from .academy_access import AcademyAccess  # noqa: F401
+
+
+# =============================================================================
+# AuditLog (Prisma-owned, unchanged)
+# =============================================================================
 
 
 class AuditLog(models.Model):
@@ -103,10 +192,16 @@ class AuditLog(models.Model):
     )
     action = models.CharField(max_length=40, choices=AuditAction.choices)
     entity_type = models.CharField(max_length=100, db_column='entityType')
-    entity_id = models.CharField(max_length=255, null=True, blank=True, db_column='entityId')
+    entity_id = models.CharField(
+        max_length=255, null=True, blank=True, db_column='entityId'
+    )
     details = models.JSONField(null=True, blank=True)
-    ip_address = models.CharField(max_length=64, null=True, blank=True, db_column='ipAddress')
-    user_agent = models.CharField(max_length=512, null=True, blank=True, db_column='userAgent')
+    ip_address = models.CharField(
+        max_length=64, null=True, blank=True, db_column='ipAddress'
+    )
+    user_agent = models.CharField(
+        max_length=512, null=True, blank=True, db_column='userAgent'
+    )
     timestamp = models.DateTimeField(db_column='timestamp')
 
     class Meta:

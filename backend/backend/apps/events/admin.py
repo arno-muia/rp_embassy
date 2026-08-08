@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ChurchEvent, EventRegistration, Announcement
+from .models import ChurchEvent, HomepageUpcomingEvent, EventRegistration, Announcement
 
 
 @admin.register(ChurchEvent)
@@ -29,6 +29,55 @@ class ChurchEventAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
+
+
+# =============================================================================
+# Homepage Upcoming Events — read-only filtered view of homepage-eligible events
+# =============================================================================
+
+
+@admin.register(HomepageUpcomingEvent)
+class HomepageUpcomingEventsAdmin(admin.ModelAdmin):
+    """Read-only admin showing only events eligible for homepage rendering.
+
+    Uses the same filtering logic as the homepage API/frontend:
+    - status='PUBLISHED'
+    - ordered by start_date_time ascending
+
+    This is a presentation-layer filter only.  No data is moved, no
+    duplicate table is created.
+    """
+    model = ChurchEvent
+    list_display = (
+        'title', 'type', 'start_date_time', 'end_date_time',
+        'location', 'updated_at'
+    )
+    search_fields = ('title', 'description', 'location')
+    list_filter = ('type', 'start_date_time')
+    readonly_fields = (
+        'title', 'description', 'type', 'status', 'start_date_time',
+        'end_date_time', 'location', 'image_url', 'registration_required',
+        'max_attendees', 'cost_cents', 'registration_open_date',
+        'created_by', 'created_at', 'updated_at',
+    )
+    ordering = ('start_date_time',)
+
+    def get_queryset(self, request):
+        """Return only PUBLISHED events — same filter as EventRepository.published_upcoming()."""
+        qs = super().get_queryset(request)
+        return qs.filter(status='PUBLISHED').order_by('start_date_time')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True  # Read-only but still viewable
+
+    def get_actions(self, request):
+        return []  # Remove all action checkboxes
 
 
 @admin.register(EventRegistration)

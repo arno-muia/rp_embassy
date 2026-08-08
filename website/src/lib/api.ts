@@ -13,7 +13,9 @@ import type {
   LeaderView,
   TestimonialView,
   AcademyModuleView,
+  ServiceTime,
 } from "../types";
+import { EVENT_CATEGORY_LABELS } from "../types";
 
 const API_BASE_URL =
   import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") ||
@@ -31,17 +33,28 @@ export const API_ENDPOINTS = {
   testimonials: `${API_BASE_URL}/api/testimonials`,
   academy: `${API_BASE_URL}/api/academy`,
   siteConfig: `${API_BASE_URL}/api/site-config`,
+  homepage: `${API_BASE_URL}/api/homepage`,
   contact: `${API_BASE_URL}/api/contact`,
   prayer: `${API_BASE_URL}/api/prayer`,
   rsvp: `${API_BASE_URL}/api/rsvp`,
   health: `${API_BASE_URL}/api/health`,
   login: `${API_BASE_URL}/api/auth/login`,
+  logout: `${API_BASE_URL}/api/auth/logout`,
+  me: `${API_BASE_URL}/api/auth/me`,
   changePassword: `${API_BASE_URL}/api/auth/change-password`,
+  csrfToken: `${API_BASE_URL}/api/auth/csrf-token`,
 } as const;
 
-async function getJson<T>(path: string): Promise<T> {
+async function getJson<T>(
+  path: string,
+  cookieHeader?: string,
+): Promise<T> {
   const res = await fetch(path, {
-    headers: { Accept: "application/json" },
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+    },
     redirect: "follow",
   });
   if (!res.ok) {
@@ -94,6 +107,18 @@ export function toEventView(e: Event): EventView {
         : e.status === "PUBLISHED"
           ? "ongoing"
           : "past";
+
+  let endDate: string | undefined;
+  let endTime: string | undefined;
+  if (e.end_date_time) {
+    const end = new Date(e.end_date_time);
+    endDate = end.toISOString().split("T")[0];
+    endTime = end.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
   return {
     id: e.id,
     slug: e.id,
@@ -104,9 +129,12 @@ export function toEventView(e: Event): EventView {
       hour: "numeric",
       minute: "2-digit",
     }),
+    endDate,
+    endTime,
     location: e.location ?? "Thika, Kenya",
     image: e.image_url ?? "/images/posters/kingdom-formation.jpeg",
-    category: "special",
+    category: e.type || "OTHER",
+    categoryLabel: EVENT_CATEGORY_LABELS[e.type] || "Special Event",
     registrationRequired: e.registration_required,
     registrationUrl: e.registration_required
       ? `/visit#rsvp`
@@ -254,9 +282,84 @@ export async function getTestimonials(): Promise<TestimonialView[]> {
   return data.map(toTestimonialView);
 }
 
-export async function getAcademyModules(): Promise<AcademyModuleView[]> {
-  const data = await getJson<AcademyModule[]>(API_ENDPOINTS.academy);
-  return data.map(toAcademyModuleView).sort((a, b) => a.order - b.order);
+export async function getAcademyModules(
+  cookieHeader?: string,
+): Promise<AcademyModuleView[]> {
+  // A1: Forward the browser's Cookie header when called server-side (SSR).
+  // Without this, Django returns 403 because the Node fetch has no session.
+  try {
+    const data = await getJson<AcademyModule[]>(
+      API_ENDPOINTS.academy,
+      cookieHeader,
+    );
+    return data.map(toAcademyModuleView).sort((a, b) => a.order - b.order);
+  } catch {
+    // If the user is authenticated but not authorized to view academy modules
+    // (403), or any other failure occurs, return an empty list so the page
+    // can render gracefully instead of crashing SSR.
+    return [];
+  }
+}
+
+/* ---------- CSRF helpers ---------- */
+
+/**
+ * Read the ``csrftoken`` cookie value.
+ *
+ * This is the single source of truth for the CSRF token.  The backend
+ * ``/api/auth/csrf-token`` endpoint sets this cookie; we read it directly
+ * rather than trusting any JSON payload that could get out of sync if the
+ * endpoint is called multiple times before a POST.
+ */
+export function getCsrfTokenFromCookie(): string | null {
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+/* ---------- Auth helpers (A1.5) ---------- */
+
+export async function getMe(
+  cookieHeader?: string,
+): Promise<AuthUser | null> {
+  try {
+    const res = await fetch(API_ENDPOINTS.me, {
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+export async function logout(): Promise<boolean> {
+  try {
+    const res = await fetch(API_ENDPOINTS.logout, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  is_active: boolean;
+  must_change_password: boolean;
+  last_login: string | null;
 }
 
 export interface SiteConfig {
@@ -280,16 +383,6 @@ export interface SiteConfig {
   beliefs?: { id: string; title: string; description: string }[];
   values?: { id: string; title: string; description: string }[];
   visitFaqs?: { question: string; answer: string }[];
-  serviceTimes?: {
-    name: string;
-    day: string;
-    time: string;
-    platform: "physical" | "online";
-    location?: string;
-    link?: string;
-    description?: string;
-    image?: string;
-  }[];
   theme2026?: {
     title: string;
     scripture: string;
@@ -301,6 +394,31 @@ export interface SiteConfig {
 export async function getSiteConfig(): Promise<SiteConfig | undefined> {
   try {
     return await getJson<SiteConfig>(API_ENDPOINTS.siteConfig);
+  } catch {
+    return undefined;
+  }
+}
+
+export interface HomePageResponse {
+  hero: Record<string, unknown>;
+  churchProfile: Record<string, unknown>;
+  serviceTimes: ServiceTime[];
+  values: Array<Record<string, unknown>>;
+  beliefs: Array<Record<string, unknown>>;
+  faqs: Array<Record<string, unknown>>;
+  whatToExpect: Array<Record<string, unknown>>;
+  sections: Array<Record<string, unknown>>;
+  latestSermon: Record<string, unknown> | null;
+  events: EventView[];
+  testimonials: TestimonialView[];
+  leaders: LeaderView[];
+}
+
+export { ServiceTime };
+
+export async function getHomepage(): Promise<HomePageResponse | undefined> {
+  try {
+    return await getJson<HomePageResponse>(API_ENDPOINTS.homepage);
   } catch {
     return undefined;
   }

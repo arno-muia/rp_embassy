@@ -5,7 +5,7 @@ import ServiceTimesCarousel from "../components/shared/ServiceTimesCarousel.astr
 import FaqAccordion from "../components/content/FaqAccordion.astro";
 import RsvpForm from "../components/forms/RsvpForm.astro";
 import Button from "../components/ui/Button.astro";
-import { getSiteConfig } from "../lib/api";
+import { getSiteConfig, getHomepage } from "../lib/api";
 import { images, site } from "../lib/site";
 
 const iconMap: Record<string, string> = {
@@ -15,7 +15,10 @@ const iconMap: Record<string, string> = {
   "trending-up": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
 };
 
-const config = await getSiteConfig();
+const [config, homepage] = await Promise.all([
+  getSiteConfig(),
+  getHomepage(),
+]);
 const MAP_EMBED =
   "https://maps.google.com/maps?q=Voice+of+Grace+Behind+Spoonzoom+Thika+Kenya&output=embed";
 
@@ -38,7 +41,7 @@ const visitSteps = [
   />
 
   {
-    config?.serviceTimes && config.serviceTimes.length > 0 && (
+    (homepage?.serviceTimes && homepage.serviceTimes.length > 0) && (
       <section class="register-celestial section-padding">
         <div class="mx-auto max-w-7xl px-5 md:px-8">
         <div class="mb-12 text-center" data-reveal data-reveal-y="24">
@@ -49,7 +52,7 @@ const visitSteps = [
             Service Times
           </h2>
         </div>
-        <ServiceTimesCarousel services={config.serviceTimes} />
+        <ServiceTimesCarousel services={homepage.serviceTimes} />
         </div>
       </section>
     )

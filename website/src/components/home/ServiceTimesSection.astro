@@ -5,68 +5,11 @@ interface Props {
   services: ServiceTime[];
 }
 
-const { services = [] }: Props = Astro.props;
+const { services }: Props = Astro.props;
 
-const FALLBACK_SERVICES: ServiceTime[] = [
-  {
-    name: "Sunday Online Service",
-    day: "Sunday",
-    time: "6:00 AM – 8:00 AM",
-    platform: "online",
-    location: "Google Meet",
-    link: "https://www.youtube.com/@RoyalPriesthoodEmbassy",
-    description: "Early morning worship and teaching for our online family. Join from anywhere in the world.",
-    image: "/images/events/sunday-online-service-poster-1.jpeg",
-  },
-  {
-    name: "Saturday Physical Service",
-    day: "Saturday",
-    time: "9:00 AM – 12:00 PM",
-    platform: "physical",
-    location: "Voice of Grace, Behind Spoonzoom, Thika",
-    description: "Our primary worship gathering — worship, teaching, and ministry time in the sanctuary.",
-    image: "/images/services/kingdom-formation-2.jpg",
-  },
-  {
-    name: "Kingdom Formation",
-    day: "Tuesday",
-    time: "8:30 PM",
-    platform: "online",
-    location: "Google Meet",
-    link: "https://www.youtube.com/@RoyalPriesthoodEmbassy",
-    description: "Blueprint Tuesdays — deep discipleship teaching and Holy Communion. Where Kingdom patterns are revealed.",
-    image: "/images/events/kingdom-formation-poster.jpeg",
-  },
-  {
-    name: "Thursday Partner's Meeting",
-    day: "Thursday",
-    time: "TBD",
-    platform: "online",
-    location: "Voice of Grace, Behind Spoonzoom, Thika",
-    description: "Corporate prayer and intercession for the nation, church, and families.",
-    image: "/images/services/kingdom-formation-3.jpg",
-  },
-  {
-    name: "Cell Group Meetings",
-    day: "Wednesday",
-    time: "TBD",
-    platform: "physical",
-    location: "Thika, Juja, Bypass, Kahawa Sukari, Kasarani, Kitengela",
-    image: "/images/services/kingdom-formation-3.jpg",
-  },
-];
-
-const TAB_ORDER = [
-  "Sunday Online Service",
-  "Saturday Physical Service",
-  "Kingdom Formation",
-  "Thursday Partner's Meeting",
-  "Cell Group Meetings",
-];
-
-const orderedServices = TAB_ORDER.map((tabName) =>
-  services.find((s) => s.name === tabName) ?? FALLBACK_SERVICES.find((s) => s.name === tabName) ?? null,
-).filter(Boolean) as ServiceTime[];
+// Services arrive pre-ordered by display_order from the API.
+// No hardcoded fallback, no name matching, no TAB_ORDER reconstruction.
+const orderedServices = services;
 
 const first = orderedServices[0];
 const isOnline = first?.platform === "online";

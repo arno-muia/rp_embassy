@@ -27,16 +27,26 @@ const inputClass =
     <label for="password" class="text-sm font-medium text-foreground">
       Password
     </label>
-    <input
-      id="password"
-      name="password"
-      type="password"
-      autocomplete="current-password"
-      required
-      minlength="8"
-      placeholder="••••••••"
-      class={inputClass}
-    />
+    <div class="relative">
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+        minlength="8"
+        placeholder="••••••••"
+        class={inputClass}
+      />
+      <button
+        type="button"
+        id="toggle-password"
+        class="absolute inset-y-0 right-0 flex items-center px-3 text-sm text-muted-foreground hover:text-foreground"
+        aria-label="Show password"
+      >
+        Show
+      </button>
+    </div>
   </div>
   <button
     type="submit"
@@ -47,6 +57,8 @@ const inputClass =
 </form>
 
 <script>
+  import { API_ENDPOINTS } from "../../lib/api";
+
   const form = document.getElementById("login-form") as HTMLFormElement | null;
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -58,9 +70,27 @@ const inputClass =
     btn.disabled = true;
     btn.textContent = "Signing in…";
     try {
+      // Ensure csrftoken cookie exists (GET /api/auth/csrf-token sets it)
+      // A1: Use the env-based API_ENDPOINTS.csrfToken so the request stays
+      // same-origin with the frontend (localhost:4321 → localhost:8000),
+      // not a hardcoded 127.0.0.1:8000 which breaks SameSite=Lax cookies.
+      await fetch(API_ENDPOINTS.csrfToken, {
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      }).catch(() => {});
+
+      // Single source of truth: read the csrftoken cookie value directly.
+      // Cookie value === X-CSRFToken header value.
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+      const csrfToken = cookieMatch ? decodeURIComponent(cookieMatch[1]) : null;
+
       const res = await fetch(form.dataset.endpoint!, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+        },
         body: JSON.stringify({
           email: String(data.email).toLowerCase().trim(),
           password: data.password,
@@ -68,7 +98,19 @@ const inputClass =
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error ?? "Invalid email or password.");
-      window.location.href = "/dashboard";
+
+      // A1.6: Support ?redirect= query param, default to /academy
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || "/academy";
+
+      // Security: only allow relative paths (prevent open redirect)
+      const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//")
+        ? redirect
+        : "/academy";
+
+      // Redirect immediately after successful login.
+      // The browser will persist cookies before navigating.
+      window.location.replace(safeRedirect);
     } catch (e) {
       err.textContent =
         e instanceof Error ? e.message : "Something went wrong.";
@@ -77,5 +119,15 @@ const inputClass =
       btn.disabled = false;
       btn.textContent = "Sign In";
     }
+  });
+
+  // Password visibility toggle
+  const toggleBtn = document.getElementById("toggle-password");
+  const passwordInput = document.getElementById("password");
+  toggleBtn?.addEventListener("click", () => {
+    const isPassword = passwordInput?.getAttribute("type") === "password";
+    passwordInput?.setAttribute("type", isPassword ? "text" : "password");
+    toggleBtn.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+    toggleBtn.textContent = isPassword ? "Hide" : "Show";
   });
 </script>

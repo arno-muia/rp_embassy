@@ -47,6 +47,25 @@ class SystemConfig(models.Model):
         return self.key
 
 
+class HeroSectionConfig(SystemConfig):
+    """Proxy model for homepage hero content management.
+
+    Filters SystemConfig to the 'site' key only — the actual source
+    of hero scripture, tagline, description, and background image
+    consumed by the homepage HeroSection component.
+
+    Uses the same ``SystemConfig`` table — no duplicate storage.
+    """
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Hero Section'
+        verbose_name_plural = 'Hero Section'
+
+    def __str__(self) -> str:
+        return 'Hero Section Configuration'
+
+
 class SermonSeries(models.Model):
     """Maps to Prisma model SermonSeries -> table 'SermonSeries'."""
 
@@ -273,13 +292,23 @@ class GlobalSettings(models.Model):
 class HomepageSettings(models.Model):
     """Homepage hero configuration. Singleton pattern enforced at app level."""
 
-    hero_title = models.CharField(max_length=255, null=True, blank=True)
-    hero_subtitle = models.CharField(max_length=512, null=True, blank=True)
-    hero_scripture = models.TextField(null=True, blank=True)
-    hero_scripture_reference = models.CharField(max_length=128, null=True, blank=True)
-    hero_background_image = models.URLField(max_length=512, null=True, blank=True)
-    hero_cta_text = models.CharField(max_length=128, null=True, blank=True)
-    hero_cta_url = models.URLField(max_length=512, null=True, blank=True)
+    hero_title = models.CharField(max_length=255, null=True, blank=True, help_text='Main hero heading text')
+    hero_subtitle = models.CharField(max_length=512, null=True, blank=True, help_text='Hero subtitle beneath the heading')
+    hero_scripture = models.TextField(null=True, blank=True, help_text='Hero scripture verse text')
+    hero_scripture_reference = models.CharField(max_length=128, null=True, blank=True, help_text='Scripture reference (e.g. 1 Peter 2:9)')
+    hero_background_image = models.URLField(max_length=512, null=True, blank=True, help_text='URL or path to hero background image')
+    hero_cta_text = models.CharField(max_length=128, null=True, blank=True, help_text='Primary CTA button text')
+    hero_cta_url = models.URLField(max_length=512, null=True, blank=True, help_text='Primary CTA button URL')
+    hero_secondary_cta_text = models.CharField(max_length=128, null=True, blank=True, default='Watch a Sermon', help_text='Secondary CTA button text')
+    hero_secondary_cta_url = models.URLField(max_length=512, null=True, blank=True, default='/sermons', help_text='Secondary CTA button URL')
+    cta_heading = models.CharField(max_length=255, null=True, blank=True, default='Join Us This Sunday', help_text='CTA banner heading')
+    cta_title = models.CharField(max_length=255, null=True, blank=True, default="You're Invited", help_text='CTA banner title')
+    cta_description = models.TextField(null=True, blank=True, help_text='CTA banner description text')
+    cta_button_text = models.CharField(max_length=128, null=True, blank=True, default='Plan Your Visit', help_text='CTA primary button text')
+    cta_button_url = models.URLField(max_length=512, null=True, blank=True, default='/visit', help_text='CTA primary button URL')
+    cta_secondary_button_text = models.CharField(max_length=128, null=True, blank=True, default='Watch a Sermon', help_text='CTA secondary button text')
+    cta_secondary_button_url = models.URLField(max_length=512, null=True, blank=True, default='/sermons', help_text='CTA secondary button URL')
+    cta_location = models.CharField(max_length=255, null=True, blank=True, default='Thika, Kenya', help_text='Church location for CTA banner')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -376,6 +405,63 @@ class HomepageSection(models.Model):
         return self.section_name
 
 
+class HomepageLatestSermon(PublicSermon):
+    """Proxy model for homepage latest sermon management.
+
+    Uses the same ``PublicSermon`` table — no duplicate storage.
+    The admin for this model filters to only the single most recently
+    published sermon (by date descending), matching the homepage
+    API/frontend logic.
+    """
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Latest Sermon'
+        verbose_name_plural = 'Latest Sermon'
+
+
+class PastorProfile(models.Model):
+    """CMS-managed pastor profile for the homepage Pastor Section."""
+
+    name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    image = models.CharField(max_length=512)
+    biography = models.TextField()
+    cta_text = models.CharField(max_length=255, blank=True, default='Learn More')
+    cta_url = models.CharField(max_length=512, blank=True, default='/about')
+    display_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        verbose_name = 'Pastor Profile'
+        verbose_name_plural = 'Pastor Profiles'
+        indexes = [
+            models.Index(fields=['is_active'], name='pastor_active_idx'),
+            models.Index(fields=['display_order'], name='pastor_order_idx'),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def clean(self):
+        """Enforce only one active pastor profile at a time."""
+        from django.core.exceptions import ValidationError
+        if self.is_active:
+            # Check if there's another active profile
+            active_profiles = PastorProfile.objects.filter(is_active=True)
+            if self.pk:
+                active_profiles = active_profiles.exclude(pk=self.pk)
+            if active_profiles.exists():
+                raise ValidationError('Only one PastorProfile can be active at a time.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+
 class DayOfWeek(models.TextChoices):
     MONDAY = 'MONDAY', 'Monday'
     TUESDAY = 'TUESDAY', 'Tuesday'
@@ -386,15 +472,36 @@ class DayOfWeek(models.TextChoices):
     SUNDAY = 'SUNDAY', 'Sunday'
 
 
-class ServiceTime(models.Model):
-    """Service time entries with display ordering."""
+class PlatformChoices(models.TextChoices):
+    PHYSICAL = 'physical', 'Physical'
+    ONLINE = 'online', 'Online'
 
+
+class ServiceTime(models.Model):
+    """Service time entries -- single authoritative source for Service Times UI."""
+
+    name = models.CharField(max_length=128, help_text="Display name, e.g. 'Sunday Online Service'")
     day = models.CharField(max_length=12, choices=DayOfWeek.choices)
-    time = models.TimeField()
-    label = models.CharField(max_length=128)
+    time = models.CharField(
+        max_length=64,
+        help_text="Display string, e.g. '6:00 AM - 8:00 AM' or 'TBD'",
+    )
+    platform = models.CharField(
+        max_length=12,
+        choices=PlatformChoices.choices,
+        default=PlatformChoices.PHYSICAL,
+    )
+    location = models.CharField(max_length=512, null=True, blank=True)
+    link = models.URLField(max_length=512, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    image = models.CharField(max_length=512, null=True, blank=True, help_text='Image path or URL')
+    is_published = models.BooleanField(default=True)
     display_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Legacy field -- kept for backward compatibility, not used by the UI
+    label = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
         managed = True
@@ -403,7 +510,8 @@ class ServiceTime(models.Model):
         indexes = [
             models.Index(fields=['display_order'], name='servicetime_order_idx'),
             models.Index(fields=['day'], name='servicetime_day_idx'),
+            models.Index(fields=['is_published'], name='servicetime_published_idx'),
         ]
 
     def __str__(self) -> str:
-        return f'{self.get_day_display()} {self.time} — {self.label}'
+        return f'{self.name} - {self.get_day_display()} {self.time}'

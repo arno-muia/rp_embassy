@@ -13,10 +13,14 @@ import {
   getLatestSermon,
   getTestimonials,
   getSiteConfig,
+  getHomepage,
 } from "../lib/api";
 import { churchSchema } from "../lib/seo";
 
-const config = await getSiteConfig();
+const [config, homepage] = await Promise.all([
+  getSiteConfig(),
+  getHomepage(),
+]);
 const [events, latestSermon, testimonials] = await Promise.all([
   getUpcomingEvents(5),
   getLatestSermon(),
@@ -57,11 +61,11 @@ const sermonThumbnail = latestSermon?.thumbnail ?? "";
     window.__SERMON_THUMBNAIL__ = '{sermonThumbnail}';
   </script>
 
-  <HeroSection config={config} />
+  <HeroSection config={config} hero={homepage?.hero} />
 
   <!-- Service Times Section -->
-  {config?.serviceTimes && config.serviceTimes.length > 0 && (
-    <ServiceTimesSection services={config.serviceTimes} />
+  {homepage?.serviceTimes && homepage.serviceTimes.length > 0 && (
+    <ServiceTimesSection services={homepage.serviceTimes} />
   )}
 
   <!-- Upcoming Events Carousel -->
@@ -73,13 +77,19 @@ const sermonThumbnail = latestSermon?.thumbnail ?? "";
   )}
 
   <!-- Latest Sermon -->
-  {latestSermon && <LatestSermonSection sermon={latestSermon} />}
+  {latestSermon && (
+    <LatestSermonSection 
+      sermon={latestSermon} 
+      ctaText={homepage?.hero?.hero_cta_text}
+      ctaUrl={homepage?.hero?.hero_cta_url}
+    />
+  )}
 
   <!-- Testimonials Carousel -->
   {testimonials.length > 0 && <TestimonialsSection testimonials={testimonials} sermonThumbnail={sermonThumbnail} />}
 
   <!-- Pastor Section -->
-  <PastorSection />
+  <PastorSection pastorProfile={homepage?.pastorProfile} />
 
-  <CtaBannerSection config={config} />
+  <CtaBannerSection serviceTimes={homepage?.serviceTimes} hero={homepage?.hero} />
 </Layout>

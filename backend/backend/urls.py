@@ -21,6 +21,7 @@ def health_check(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('backend.apps.accounts.urls')),
     path('api/', include('backend.apps.content.urls')),
     path('api/', include('backend.apps.events.urls')),
     path('api/', include('backend.apps.prayer.urls')),

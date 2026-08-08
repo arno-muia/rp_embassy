@@ -1,17 +1,21 @@
 ---
 import Button from "../ui/Button.astro";
-import { images, site } from "../../lib/site";
-import type { SiteConfig } from "../../lib/api";
+import { site } from "../../lib/site";
 
 interface Props {
-  config?: SiteConfig;
+  config?: Record<string, unknown>;
+  hero?: Record<string, unknown>;
 }
 
-const { config } = Astro.props;
-const heroImage = images.hero;
-const scripture = config?.scripture ?? site.scripture;
-const tagline = config?.tagline ?? site.tagline;
-const description = config?.description ?? site.description;
+const { config, hero } = Astro.props;
+const heroImage = (config?.heroBackgroundImage as string) || "/images/services/kingdom-formation-1.jpg";
+const scripture = (config?.scripture as string) ?? site.scripture;
+const tagline = (config?.tagline as string) ?? site.tagline;
+const description = (config?.description as string) ?? site.description;
+const ctaText = (hero?.hero_cta_text as string) || "Plan Your Visit";
+const ctaUrl = (hero?.hero_cta_url as string) || "/visit";
+const secondaryCtaText = hero?.hero_secondary_cta_text as string | undefined;
+const secondaryCtaUrl = hero?.hero_secondary_cta_url as string | undefined;
 ---
 
 <section class="relative min-h-screen overflow-hidden text-white -mt-20" data-hero-animator>
@@ -54,8 +58,13 @@ const description = config?.description ?? site.description;
 
     <div class="mt-12 flex flex-col gap-4 border-t border-white/20 pt-8 sm:flex-row sm:items-center">
       <span data-hero-cta>
-        <Button href="/visit" variant="gold">Plan Your Visit</Button>
+        <Button href={ctaUrl} variant="gold">{ctaText}</Button>
       </span>
+      {secondaryCtaText && secondaryCtaUrl && (
+        <span data-hero-secondary-cta>
+          <Button href={secondaryCtaUrl} variant="gray">{secondaryCtaText}</Button>
+        </span>
+      )}
     </div>
   </div>
 </section>

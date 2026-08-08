@@ -88,6 +88,20 @@ class ChurchEvent(models.Model):
         return self.title
 
 
+class HomepageUpcomingEvent(ChurchEvent):
+    """Proxy model for homepage-filtered event management.
+
+    Uses the same ``ChurchEvent`` table — no duplicate storage.
+    The admin for this model filters to PUBLISHED events only,
+    matching the homepage API/frontend logic.
+    """
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Upcoming Event'
+        verbose_name_plural = 'Upcoming Events'
+
+
 class EventRegistration(models.Model):
     """Maps to Prisma model EventRegistration -> table 'EventRegistration'."""
 

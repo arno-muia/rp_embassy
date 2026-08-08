@@ -6,7 +6,6 @@ import Button from "../../components/ui/Button.astro";
 import { getEventById, getEvents } from "../../lib/api";
 import { formatEventDate } from "../../lib/format";
 
-
 export async function getStaticPaths() {
   try {
     const events = await getEvents();
@@ -20,23 +19,58 @@ const { id } = Astro.params;
 const event = id ? await getEventById(id) : undefined;
 
 if (!event) return Astro.redirect("/events");
+
+const displayTime = event.endTime
+  ? `${event.time} – ${event.endTime}`
+  : event.time;
+
+const monthAbbr = new Date(event.date).toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+const dayNum = new Date(event.date).getDate();
 ---
 
 <Layout title={event.title} description={event.description}>
   <PageHero
     title={event.title}
-    subtitle={`${formatEventDate(event.date)} · ${event.time} · ${event.location}`}
+    subtitle={`[Calendar chip: ${monthAbbr} ${dayNum}] · [Clock icon] ${displayTime} · [Map pin icon] ${event.location}`}
     register="warm"
+    extraProps={{
+      categoryBadge: event.categoryLabel,
+      registrationRequired: event.registrationRequired
+    }}
   />
+
+  <!-- Breadcrumb -->
+  <nav class="mx-auto mt-6 max-w-4xl px-5 md:px-8" aria-label="Breadcrumb">
+    <ol class="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+      <li>
+        <a href="/" class="hover:text-primary transition-colors">Home</a>
+      </li>
+      <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+      <li>
+        <a href="/events" class="hover:text-primary transition-colors">Events</a>
+      </li>
+      <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+      <li class="truncate text-foreground max-w-[200px] md:max-w-xs" aria-current="page">
+        {event.title}
+      </li>
+    </ol>
+  </nav>
 
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-4xl px-5 md:px-8">
       <div class="relative aspect-[16/9] overflow-hidden rounded-xl border border-border">
         <img
           src={event.image}
-          alt={event.title}
+          alt={`${event.title} — ${event.categoryLabel} event banner`}
           class="h-full w-full object-cover"
         />
+        {
+          event.status === "ongoing" && (
+            <span class="absolute left-3 top-3 rounded-full bg-fire-500 px-3 py-1 text-xs font-semibold text-white">
+              Ongoing
+            </span>
+          )
+        }
       </div>
       <div class="mt-8 space-y-4">
         <p class="text-lg leading-relaxed text-muted-foreground">
@@ -60,7 +94,7 @@ if (!event) return Astro.redirect("/events");
               >
                 Time
               </dt>
-              <dd class="mt-1 font-medium text-foreground">{event.time}</dd>
+              <dd class="mt-1 font-medium text-foreground">{displayTime}</dd>
             </div>
             <div class="sm:col-span-2">
               <dt
@@ -72,7 +106,26 @@ if (!event) return Astro.redirect("/events");
             </div>
           </dl>
         </div>
-        <Button href="/visit#rsvp" variant="primary">Plan Your Visit</Button>
+        {
+          event.status === "past" ? (
+            <p class="text-center text-sm text-muted-foreground italic">
+              This event has ended.
+            </p>
+          ) : event.registrationRequired ? (
+            <div class="space-y-2 text-center">
+              <Button href={event.registrationUrl || "/visit#rsvp"} variant="primary">
+                Register Now →
+              </Button>
+              <p class="text-xs text-muted-foreground">Space is limited</p>
+            </div>
+          ) : (
+            <div class="text-center">
+              <Button href="/visit#rsvp" variant="primary">
+                Plan Your Visit
+              </Button>
+            </div>
+          )
+        }
       </div>
     </div>
   </section>

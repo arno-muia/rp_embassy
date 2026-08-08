@@ -1,0 +1,55 @@
+"""Migration to create the AcademyAccess authorization table."""
+
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('accounts', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='AcademyAccess',
+            fields=[
+                ('id', models.BigAutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('granted_at', models.DateTimeField(auto_now_add=True)),
+                ('note', models.CharField(blank=True, default='', max_length=255)),
+                ('is_active', models.BooleanField(default=True)),
+                ('granted_by', models.ForeignKey(
+                    null=True,
+                    blank=True,
+                    on_delete=models.SET_NULL,
+                    related_name='granted_academy_accesses',
+                    to=settings.AUTH_USER_MODEL,
+                    db_constraint=False,
+                )),
+                ('user', models.ForeignKey(
+                    on_delete=models.CASCADE,
+                    related_name='academy_accesses',
+                    to=settings.AUTH_USER_MODEL,
+                    db_constraint=False,
+                )),
+            ],
+            options={
+                'db_table': 'AcademyAccess',
+            },
+        ),
+        migrations.AddIndex(
+            model_name='academyaccess',
+            index=models.Index(
+                fields=['user', 'is_active'],
+                name='academyaccess_user_active_idx',
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name='academyaccess',
+            constraint=models.UniqueConstraint(
+                condition=models.Q(is_active=True),
+                fields=['user'],
+                name='unique_active_academy_access_per_user',
+            ),
+        ),
+    ]

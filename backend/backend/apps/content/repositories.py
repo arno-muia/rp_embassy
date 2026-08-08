@@ -6,9 +6,15 @@ Repository pattern only — query abstraction, no business logic.
 from django.db import models
 
 from .models import (
+    ChurchProfile,
     ContactSubmission,
+    ContentBlock,
+    HomepageSection,
+    HomepageSettings,
+    PastorProfile,
     PublicSermon,
     SermonSeries,
+    ServiceTime,
     SystemConfig,
     VisitRsvp,
     WebsiteAcademyModule,
@@ -113,3 +119,76 @@ class VisitRsvpRepository:
     @classmethod
     def pending(cls):
         return VisitRsvp.objects.filter(status='PENDING')
+
+
+# =============================================================================
+# CMS Model Repositories (managed=True)
+# =============================================================================
+
+
+class HomepageSettingsRepository:
+    """Repository for HomepageSettings (singleton hero configuration)."""
+    model = HomepageSettings
+
+    @classmethod
+    def get_solo(cls) -> HomepageSettings | None:
+        """Get the singleton HomepageSettings instance."""
+        return HomepageSettings.objects.first()
+
+
+class ChurchProfileRepository:
+    """Repository for ChurchProfile (singleton church identity)."""
+    model = ChurchProfile
+
+    @classmethod
+    def get_solo(cls) -> ChurchProfile | None:
+        """Get the singleton ChurchProfile instance."""
+        return ChurchProfile.objects.first()
+
+
+class ServiceTimeRepository:
+    """Repository for ServiceTime entries."""
+    model = ServiceTime
+
+    @classmethod
+    def all_ordered(cls):
+        """Get all service times ordered by display_order."""
+        return ServiceTime.objects.all().order_by('display_order', 'day')
+
+
+class ContentBlockRepository:
+    """Repository for ContentBlock entries."""
+    model = ContentBlock
+
+    @classmethod
+    def by_type(cls, content_type: str):
+        """Get content blocks by type, ordered by display_order."""
+        return ContentBlock.objects.filter(
+            content_type=content_type,
+            is_active=True
+        ).order_by('display_order')
+
+
+class HomepageSectionRepository:
+    """Repository for HomepageSection entries."""
+    model = HomepageSection
+
+    @classmethod
+    def all_ordered(cls):
+        """Get all homepage sections ordered by display_order."""
+        return HomepageSection.objects.all().order_by('display_order')
+
+    @classmethod
+    def get_by_name(cls, section_name: str) -> HomepageSection | None:
+        """Get a specific section by name."""
+        return HomepageSection.objects.filter(section_name=section_name).first()
+
+
+class PastorProfileRepository:
+    """Repository for PastorProfile."""
+    model = PastorProfile
+
+    @classmethod
+    def get_active(cls) -> PastorProfile | None:
+        """Get the active pastor profile."""
+        return PastorProfile.objects.filter(is_active=True).first()

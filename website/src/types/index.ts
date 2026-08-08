@@ -35,3 +35,21 @@ export interface VisitRsvp {
   status?: string;
   createdAt: string;
 }
+
+export interface HomepageHero {
+  hero_title?: string;
+  hero_subtitle?: string;
+  hero_scripture?: string;
+  hero_scripture_reference?: string;
+  hero_background_image?: string;
+  hero_cta_text?: string;
+  hero_cta_url?: string;
+  cta_heading?: string;
+  cta_title?: string;
+  cta_description?: string;
+  cta_button_text?: string;
+  cta_button_url?: string;
+  cta_secondary_button_text?: string;
+  cta_secondary_button_url?: string;
+  cta_location?: string;
+}

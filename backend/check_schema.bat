@@ -1,0 +1,4 @@
+@echo off
+set PYTHON=C:\ProgramData\Anaconda3\envs\tf_env\python.exe
+cd /d %~dp0
+%PYTHON% -c "import os,sys,django; os.environ['DJANGO_SETTINGS_MODULE']='backend.settings'; sys.path.insert(0,'.'); django.setup(); from django.db import connection; c=connection.cursor(); c.execute('SELECT column_name,data_type FROM information_schema.columns WHERE table_name=%s ORDER BY ordinal_position;', ['django_admin_log']); print('django_admin_log:'); [print(f'  {r[0]}: {r[1]}') for r in c.fetchall()]; c.execute('SELECT column_name,data_type FROM information_schema.columns WHERE table_name=%s ORDER BY ordinal_position;', ['User']); print('User:'); [print(f'  {r[0]}: {r[1]}') for r in c.fetchall()]"

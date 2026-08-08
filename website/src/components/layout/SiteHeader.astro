@@ -1,5 +1,14 @@
 ---
 import { navLinks, site } from "../../lib/site";
+import { API_ENDPOINTS, getMe } from "../../lib/api";
+
+// A1.7: Check auth state for navigation (server-side)
+// A1: Forward the browser's Cookie header — Node.js fetch does not attach
+// browser cookies automatically, so without this the auth check always
+// returns null and the header never shows the signed-in state.
+const cookieHeader = Astro.request.headers.get("cookie") || undefined;
+const user = await getMe(cookieHeader);
+const isAuthenticated = !!user;
 
 const primaryNav = navLinks.primary.filter((l) => l.label !== "Academy");
 ---
@@ -42,28 +51,26 @@ const primaryNav = navLinks.primary.filter((l) => l.label !== "Academy");
       }
     </nav>
 
-    <div class="flex items-center gap-3">
-      <button
-        type="button"
-        aria-expanded="false"
-        aria-label="Open menu"
-        id="menu-toggle"
-        class="group flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-full border border-white/30 text-white"
-      >
-        <span
-          class="h-0.5 w-5 bg-current transition-transform"
-          data-bar="1"
-        ></span>
-        <span
-          class="h-0.5 w-5 bg-current transition-opacity"
-          data-bar="2"
-        ></span>
-        <span
-          class="h-0.5 w-5 bg-current transition-transform"
-          data-bar="3"
-        ></span>
-      </button>
-    </div>
+    <button
+      type="button"
+      aria-expanded="false"
+      aria-label="Open menu"
+      id="menu-toggle"
+      class="group flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-full border border-white/30 text-white"
+    >
+      <span
+        class="h-0.5 w-5 bg-current transition-transform"
+        data-bar="1"
+      ></span>
+      <span
+        class="h-0.5 w-5 bg-current transition-opacity"
+        data-bar="2"
+      ></span>
+      <span
+        class="h-0.5 w-5 bg-current transition-transform"
+        data-bar="3"
+      ></span>
+    </button>
   </div>
 </header>
 
@@ -86,25 +93,41 @@ const primaryNav = navLinks.primary.filter((l) => l.label !== "Academy");
           ))
         }
       </div>
-      <div class="space-y-8">
+      <div class="flex flex-col items-center gap-8">
         <a
           href="/visit"
           class="mobile-link inline-flex items-center justify-center rounded-md bg-gradient-to-br from-gold-500 to-bronze-500 px-6 py-3 text-sm font-semibold text-white shadow-gold transition-all hover:-translate-y-0.5"
         >
           Plan Your Visit
         </a>
-        <a
-          href="/login"
-          class="mobile-link text-sm text-ivory-400 hover:text-gold-400"
-        >
-          Sign In →
-        </a>
+        {isAuthenticated ? (
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-sm text-ivory-400">Signed in as {user?.email}</span>
+            <button
+              type="button"
+              id="signout-btn-mobile"
+              class="mobile-link text-sm text-ivory-400 hover:text-gold-400"
+            >
+              Sign Out →
+            </button>
+          </div>
+        ) : (
+          <a
+            href="/login"
+            class="mobile-link text-sm text-ivory-400 hover:text-gold-400"
+          >
+            Sign In →
+          </a>
+        )}
       </div>
     </nav>
   </div>
 </div>
 
 <script>
+  import { API_ENDPOINTS } from "../../lib/api";
+  import { getCsrfToken } from "../../lib/auth";
+
   const header = document.getElementById("site-header");
   const toggle = document.getElementById("menu-toggle");
   const menu = document.getElementById("mobile-menu");
@@ -158,6 +181,30 @@ const primaryNav = navLinks.primary.filter((l) => l.label !== "Academy");
   menu?.querySelectorAll(".mobile-link").forEach((l) =>
     l.addEventListener("click", closeMenu),
   );
+
+  // A1.7: Sign out handler — destroys session and redirects to login
+  async function handleSignOut() {
+    try {
+      // A1.8: Include CSRF token to satisfy Django's CSRF protection.
+      const csrfToken = await getCsrfToken();
+      await fetch(API_ENDPOINTS.logout, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+        },
+      });
+    } catch {
+      // ignore — redirect anyway
+    }
+    // Redirect to login with Academy as the intended destination
+    window.location.href = "/login?redirect=/academy";
+  }
+
+  document.getElementById("signout-btn")?.addEventListener("click", handleSignOut);
+  document.getElementById("signout-btn-mobile")?.addEventListener("click", handleSignOut);
 
   // Scroll behavior: hide on scroll down, show near top
   let lastScrollY = window.scrollY;

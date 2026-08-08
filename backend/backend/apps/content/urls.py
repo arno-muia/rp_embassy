@@ -13,6 +13,7 @@ router.register(r'testimonials', views.TestimonialViewSet, basename='testimonial
 router.register(r'academy', views.AcademyModuleViewSet, basename='academy')
 
 urlpatterns = router.urls + [
+    path('homepage', views.homepage, name='homepage'),
     path('site-config', views.site_config, name='site-config'),
     path('contact', views.contact_submit, name='contact-submit'),
     path('rsvp', views.rsvp_submit, name='rsvp-submit'),

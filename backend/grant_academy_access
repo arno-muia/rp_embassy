@@ -1,0 +1,34 @@
+"""Grant AcademyAccess to existing users for A1.3 testing.
+
+Since there are no Member records in the database, the seed_academy_access
+command found nothing to grant.  This script grants AcademyAccess directly
+to existing active users so they can test Academy access during A1.3.
+"""
+import os
+import django
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'backend.settings'
+django.setup()
+
+from backend.apps.accounts.academy_access import AcademyAccess
+from backend.apps.accounts.models import User
+
+users = User.objects.filter(is_active=True)
+created = 0
+skipped = 0
+
+for user in users:
+    exists = AcademyAccess.objects.filter(
+        user_id=user.id, is_active=True
+    ).exists()
+    if exists:
+        skipped += 1
+        continue
+    AcademyAccess.objects.create(
+        user_id=user.id,
+        note='Direct grant: existing user (no Member record yet)',
+    )
+    created += 1
+    print(f"  Granted AcademyAccess to: {user.email} (id={user.id})")
+
+print(f"\nDone: {created} created, {skipped} already had access.")

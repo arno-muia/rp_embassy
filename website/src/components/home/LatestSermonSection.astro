@@ -4,9 +4,11 @@ import type { SermonView } from "../../types";
 
 interface Props {
   sermon: SermonView | null;
+  ctaText?: string;
+  ctaUrl?: string;
 }
 
-const { sermon } = Astro.props;
+const { sermon, ctaText, ctaUrl } = Astro.props;
 ---
 
 {sermon && (
@@ -48,10 +50,10 @@ const { sermon } = Astro.props;
             href={`/sermons/${sermon.slug}`}
             class="text-xs font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:text-gold-600"
           >
-            Watch Now →
+            {ctaText || "Watch Now"} →
           </a>
           <a
-            href="/sermons"
+            href={ctaUrl || "/sermons"}
             class="text-xs font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:text-gold-600"
           >
             Browse All Sermons →

@@ -16,6 +16,15 @@ export interface Event {
   status: string;
 }
 
+export const EVENT_CATEGORY_LABELS: Record<string, string> = {
+  SERVICE: "Worship Service",
+  FELLOWSHIP: "Fellowship",
+  OUTREACH: "Outreach",
+  CONFERENCE: "Conference",
+  FUNDRAISER: "Fundraiser",
+  OTHER: "Special Event",
+};
+
 export interface EventView {
   id: string;
   slug: string;
@@ -23,9 +32,12 @@ export interface EventView {
   description: string;
   date: string;
   time: string;
+  endDate?: string;
+  endTime?: string;
   location: string;
   image: string;
-  category: "service" | "special" | "outreach" | "training";
+  category: string;
+  categoryLabel: string;
   registrationRequired: boolean;
   registrationUrl?: string;
   published: boolean;

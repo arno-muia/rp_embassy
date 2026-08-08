@@ -1,8 +1,8 @@
 ---
-import type { SiteConfig } from "../../lib/api";
+import type { ServiceTime } from "../../lib/api";
 
 interface Props {
-  services: NonNullable<SiteConfig["serviceTimes"]>;
+  services: ServiceTime[];
   variant?: "cards" | "compact";
 }
 

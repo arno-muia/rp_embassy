@@ -20,16 +20,18 @@ const past = allEvents.filter((e) => e.status === "past");
 
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-7xl px-5 md:px-8">
-      <h2 class="font-display text-2xl text-foreground">Upcoming & Ongoing</h2>
+      <h2 class="font-display text-2xl text-foreground text-center">Upcoming & Ongoing</h2>
       {
         upcoming.length > 0 ? (
-          <div class="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div class="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {upcoming.map((event) => (
-              <EventCard event={event} />
+              <div class="flex justify-center">
+                <EventCard event={event} />
+              </div>
             ))}
           </div>
         ) : (
-          <p class="mt-6 text-muted-foreground">No upcoming events at this time.</p>
+          <p class="mt-6 text-muted-foreground text-center">No upcoming events at this time.</p>
         )
       }
     </div>
@@ -39,10 +41,12 @@ const past = allEvents.filter((e) => e.status === "past");
     past.length > 0 && (
       <section class="register-parchment section-padding">
         <div class="mx-auto max-w-7xl px-5 md:px-8">
-          <h2 class="font-display text-2xl text-foreground">Past Events</h2>
-          <div class="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <h2 class="font-display text-2xl text-foreground text-center">Past Events</h2>
+          <div class="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {past.map((event) => (
-              <EventCard event={event} />
+              <div class="flex justify-center">
+                <EventCard event={event} />
+              </div>
             ))}
           </div>
         </div>
