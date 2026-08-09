@@ -1,0 +1,68 @@
+---
+import "../styles/global.css";
+import AcademyHeader from "../components/layout/AcademyHeader.astro";
+import AcademySidebar from "../components/layout/AcademySidebar.astro";
+import PageTransition from "../components/motion/PageTransition.astro";
+import { site } from "../lib/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = site.name,
+  description = site.description,
+} = Astro.props;
+
+const fullTitle =
+  title === site.name ? site.name : `${title} | ${site.shortName}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/rp-logo.svg" />
+    
+    <!-- Font loading: Inter + Cinzel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem("rp-theme") || "light";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <AcademyHeader />
+    <div class="flex min-h-screen pt-[5.5rem]">
+      <AcademySidebar />
+      <main id="main-content" class="flex-1 bg-background">
+        <PageTransition>
+          <slot />
+        </PageTransition>
+      </main>
+    </div>
+    
+    <!-- Motion Initialization -->
+    <script>
+      import { initScrollReveal, initHeroAnimator, initPageTransition } from "../lib/scroll-reveal";
+      document.addEventListener("DOMContentLoaded", () => {
+        initScrollReveal();
+        initHeroAnimator();
+        initPageTransition();
+      });
+    </script>
+  </body>
+</html>
