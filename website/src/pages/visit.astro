@@ -5,7 +5,14 @@ import ServiceTimesCarousel from "../components/shared/ServiceTimesCarousel.astr
 import FaqAccordion from "../components/content/FaqAccordion.astro";
 import RsvpForm from "../components/forms/RsvpForm.astro";
 import Button from "../components/ui/Button.astro";
-import { getSiteConfig, getHomepage } from "../lib/api";
+import {
+  getSiteConfig,
+  getHomepage,
+  getVisit,
+  type VisitExpectContent,
+  type VisitFaqsContent,
+} from "../lib/api";
+import { getSections, isEnabled } from "../lib/sections";
 import { images, site } from "../lib/site";
 
 const iconMap: Record<string, string> = {
@@ -15,33 +22,84 @@ const iconMap: Record<string, string> = {
   "trending-up": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
 };
 
-const [config, homepage] = await Promise.all([
+const [config, homepage, visit, sectionFlags] = await Promise.all([
   getSiteConfig(),
   getHomepage(),
+  getVisit(),
+  getSections(),
 ]);
-const MAP_EMBED =
-  "https://maps.google.com/maps?q=Voice+of+Grace+Behind+Spoonzoom+Thika+Kenya&output=embed";
+const on = (key: string) => isEnabled(sectionFlags, "visit", key);
 
-const visitSteps = [
-  { step: "Arrive", desc: "Our hospitality team will greet you at the door and help you find a seat." },
-  { step: "Worship", desc: "Experience authentic, Spirit-led worship that draws you into God's presence." },
-  { step: "Teaching", desc: "Receive practical, Bible-based teaching on your royal identity in Christ." },
-  { step: "Community", desc: "Connect with others after service — we'd love to meet you personally." },
-];
+/* ---------- B5.7: admin-managed copy with hardcoded fallbacks ---------- */
+
+const hero = visit?.hero ?? {
+  title: "You're Welcome Here",
+  subtitle:
+    "Everything you need to know for your first visit to Royal Priesthood Embassy in Thika, Kenya.",
+  scripture: "",
+  variant: "warm",
+};
+
+const location = visit?.location ?? {
+  eyebrow: "Find Us",
+  title: "Visit Us in Thika",
+  description:
+    "We meet at Voice of Grace, behind Spoonzoom in Thika. Look for the hospitality team at the entrance — they will guide you to parking and seating.",
+  button_label: "Get Directions",
+  button_url: site.address.mapsUrl,
+  map_embed_url:
+    "https://maps.google.com/maps?q=Voice+of+Grace+Behind+Spoonzoom+Thika+Kenya&output=embed",
+  map_title: "Royal Priesthood Embassy location map",
+};
+
+const expect: VisitExpectContent = visit?.expect ?? {
+  eyebrow: "First Visit?",
+  title: "What to Expect",
+  items: [
+    { id: 0, step: "Arrive", description: "Our hospitality team will greet you at the door and help you find a seat.", icon: "music", sort_order: 0 },
+    { id: 1, step: "Worship", description: "Experience authentic, Spirit-led worship that draws you into God's presence.", icon: "book-open", sort_order: 1 },
+    { id: 2, step: "Teaching", description: "Receive practical, Bible-based teaching on your royal identity in Christ.", icon: "users", sort_order: 2 },
+    { id: 3, step: "Community", description: "Connect with others after service — we'd love to meet you personally.", icon: "trending-up", sort_order: 3 },
+  ],
+};
+
+const faqs: VisitFaqsContent = visit?.faqs ?? {
+  title: "Frequently Asked Questions",
+  items: (config?.visitFaqs ?? []).map((f, i) => ({
+    id: i + 1,
+    question: f.question,
+    answer: f.answer,
+    sort_order: i,
+  })),
+};
+
+const rsvp = visit?.rsvp ?? null;
+
+const comingSunday = visit?.comingSunday ?? {
+  title: "I Am Coming This Sunday",
+  description: "Questions before you visit? Reach out — we're happy to help.",
+  button_label: "Contact Us",
+  button_url: "#rsvp",
+};
 ---
 
 <Layout
   title="Plan Your Visit"
   description="Plan your visit to Royal Priesthood Embassy in Thika."
 >
+  {on("page-hero") && (
   <PageHero
-    title="You're Welcome Here"
-    subtitle="Everything you need to know for your first visit to Royal Priesthood Embassy in Thika, Kenya."
-    register="warm"
+    title={hero.title}
+    subtitle={hero.subtitle}
+    scripture={hero.scripture || undefined}
+    register={
+      (hero.variant as "celestial" | "parchment" | "warm") || "warm"
+    }
   />
+  )}
 
   {
-    (homepage?.serviceTimes && homepage.serviceTimes.length > 0) && (
+    on("service-times") && homepage?.serviceTimes && homepage.serviceTimes.length > 0 && (
       <section class="register-celestial section-padding">
         <div class="mx-auto max-w-7xl px-5 md:px-8">
         <div class="mb-12 text-center" data-reveal data-reveal-y="24">
@@ -58,6 +116,7 @@ const visitSteps = [
     )
   }
 
+  {on("location") && (
   <section class="register-parchment section-padding">
     <div class="mx-auto max-w-7xl px-5 md:px-8">
       <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
@@ -71,56 +130,58 @@ const visitSteps = [
           </div>
         </div>
         <div>
-          <h2 class="font-display text-3xl text-foreground md:text-4xl">Location</h2>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            {location.eyebrow}
+          </p>
+          <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">{location.title}</h2>
           <p class="mt-4 text-lg font-semibold text-foreground">
             {site.address.street}
             <br />
             {site.address.city}, {site.address.country}
           </p>
           <p class="mt-4 text-muted-foreground">
-            We meet at Voice of Grace, behind Spoonzoom in Thika. Look for the
-            hospitality team at the entrance — they will guide you to parking
-            and seating.
+            {location.description}
           </p>
-          <Button href={site.address.mapsUrl} variant="primary" external class="mt-6">
-            Get Directions
+          <Button href={location.button_url} variant="primary" external class="mt-6">
+            {location.button_label}
           </Button>
         </div>
       </div>
       <div class="mt-10 overflow-hidden rounded-xl border border-primary/20">
         <iframe
-          src={MAP_EMBED}
+          src={location.map_embed_url}
           width="100%"
           height="400"
           style="border:0"
           allowfullscreen
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
-          title="Royal Priesthood Embassy location map"
+          title={location.map_title}
           class="aspect-video w-full"
         ></iframe>
       </div>
     </div>
   </section>
+  )}
 
+  {on("what-to-expect") && (
   <section class="register-parchment section-padding">
     <div class="mx-auto max-w-7xl px-5 md:px-8">
       <div class="mb-12 text-center" data-reveal data-reveal-y="24">
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">First Visit?</p>
-        <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">What to Expect</h2>
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{expect.eyebrow}</p>
+        <h2 class="font-display mt-2 text-3xl text-foreground md:text-4xl">{expect.title}</h2>
       </div>
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4" data-reveal data-reveal-stagger="0.15" data-reveal-y="30">
         {
-          visitSteps.map((item, i) => {
-            const icons = ["music", "book-open", "users", "trending-up"];
-            const iconSvg = iconMap[icons[i] ?? "users"] ?? iconMap.users;
+          expect.items.map((item) => {
+            const iconSvg = iconMap[item.icon] ?? iconMap.users;
             return (
               <article class="card-hover glass-frost rounded-xl p-6 text-center">
                 <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full glass-gold">
                   <div set:html={iconSvg} />
                 </div>
                 <h3 class="font-display text-lg text-foreground">{item.step}</h3>
-                <p class="mt-2 text-sm text-muted-foreground">{item.desc}</p>
+                <p class="mt-2 text-sm text-muted-foreground">{item.description}</p>
               </article>
             );
           })
@@ -128,45 +189,58 @@ const visitSteps = [
       </div>
     </div>
   </section>
+  )}
 
   {
-    config?.visitFaqs && config.visitFaqs.length > 0 && (
+    on("faqs") && faqs.items.length > 0 && (
       <section class="register-parchment section-padding">
         <div class="mx-auto max-w-4xl px-5 md:px-8">
           <div class="text-center" data-reveal data-reveal-y="24">
             <h2 class="font-display text-3xl text-foreground md:text-4xl">
-              Frequently Asked Questions
+              {faqs.title}
             </h2>
           </div>
           <div class="mt-10">
-            <FaqAccordion faqs={config.visitFaqs} />
+            <FaqAccordion faqs={faqs.items} />
           </div>
         </div>
       </section>
     )
   }
 
+  {on("rsvp") && (
   <section id="rsvp" class="register-celestial section-padding">
     <div class="mx-auto max-w-xl px-5 md:px-8">
-      <RsvpForm />
+      <RsvpForm
+        heading={rsvp?.heading}
+        subheading={rsvp?.subheading}
+        submitLabel={rsvp?.submit_label}
+        successTitle={rsvp?.success_title}
+        successMessage={rsvp?.success_message}
+      />
     </div>
   </section>
+  )}
 
+  {on("coming-sunday") && (
   <section class="section-padding">
     <div
       class="glass-gold mx-auto max-w-2xl rounded-2xl px-5 py-12 text-center md:px-8"
     >
       <h2 class="font-display text-3xl text-foreground md:text-4xl">
-        I Am Coming This Sunday
+        {comingSunday.title}
       </h2>
       <p class="mt-4 text-muted-foreground">
-        Questions before you visit? Reach out — we're happy to help.
+        {comingSunday.description}
       </p>
       <div
         class="mt-8 flex justify-center"
       >
-        <Button href="#rsvp" variant="primary">Contact Us</Button>
+        <Button href={comingSunday.button_url} variant="primary">
+          {comingSunday.button_label}
+        </Button>
       </div>
     </div>
   </section>
+  )}
 </Layout>

@@ -1,14 +1,45 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import PageHero from "../components/shared/PageHero.astro";
 import Button from "../components/ui/Button.astro";
 import LeaderCard from "../components/content/LeaderCard.astro";
-import { getLeaders, getSiteConfig } from "../lib/api";
+import { getAbout, getLeaders } from "../lib/api";
+import { getSections, isEnabled } from "../lib/sections";
 import { site } from "../lib/site";
 
-const config = await getSiteConfig();
+const about = await getAbout();
 const leaders = await getLeaders();
-const themeImage = config?.theme2026?.image ?? "/images/posters/theme-2026-latter-rain.jpeg";
+const sectionFlags = await getSections();
+const on = (key: string) => isEnabled(sectionFlags, "about", key);
+
+// About section content is admin-managed (B5.5) — every component below is
+// edited from the admin's About group and served by /api/about:
+//   Admin → About → Welcome, Vision & Mission / Our Values / 2026 Theme
+// Fallbacks equal the original copy, so rendering is unchanged when the API
+// is unreachable.
+const FALLBACK_WELCOME_MESSAGE =
+  "When you step into Royal Priesthood Embassy, you are entering a space where the laws of this place are not Kenya’s laws — you are entering the Kingdom. Whether you’re exploring faith for the first time or you’ve walked with Jesus for years, there is a place here for you. We can’t wait to meet you.";
+
+const intro = about?.intro;
+const introEyebrow = intro?.eyebrow ?? "1 Peter 2:9";
+const introTitle = intro?.title ?? "Welcome to the Embassy";
+const visionLabel = intro?.vision_label ?? "our Vision";
+const visionText = intro?.vision_text ?? FALLBACK_WELCOME_MESSAGE;
+const missionLabel = intro?.mission_label ?? "Our Mission";
+const missionText = intro?.mission_text ?? FALLBACK_WELCOME_MESSAGE;
+
+const valuesHeading = about?.values?.heading ?? "Our Values";
+const valuesSubtitle =
+  about?.values?.subtitle ??
+  "The Mantle, Rod, and Sword — Identity, Authority, and Execution";
+const values = about?.values?.items ?? [];
+
+const themeEyebrow = about?.theme?.eyebrow ?? "2026 Theme";
+const themeTitle = about?.theme?.title ?? site.theme2026.title;
+const themeScripture = about?.theme?.scripture ?? site.theme2026.scripture;
+const themeScriptureText = about?.theme?.scripture_text ?? site.theme2026.scriptureText;
+const themeImage = about?.theme?.image ?? site.theme2026.image;
+const themeButtonLabel = about?.theme?.button_label ?? "Join Us";
+const themeButtonUrl = about?.theme?.button_url ?? "/visit";
 
 const president = leaders.find((l) => l.role.toLowerCase().includes("president"));
 const directors = leaders.filter(
@@ -29,41 +60,43 @@ const otherLeaders = leaders.filter(
   title="About"
   description="Learn about Royal Priesthood Embassy — our story, beliefs, values, and leadership team in Thika, Kenya."
 >
+  {on("intro") && (
   <section class="register-parchment section-padding pt-30">
     <div class="mx-auto max-w-7xl px-5 text-center md:px-8">
       <p class="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-        1 Peter 2:9
+        {introEyebrow}
       </p>
       <h1 class="font-display text-4xl tracking-tight text-foreground md:text-5xl lg:text-6xl">
-        Welcome to the Embassy
+        {introTitle}
       </h1>
       <blockquote class="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-foreground md:text-xl">
-        &ldquo;When you step into Royal Priesthood Embassy, you are entering a space where the laws of this place are not Kenya&rsquo;s laws &mdash; you are entering the Kingdom. Whether you&rsquo;re exploring faith for the first time or you&rsquo;ve walked with Jesus for years, there is a place here for you. We can&rsquo;t wait to meet you.&rdquo;
+        &ldquo;{visionText}&rdquo;
       </blockquote>
       <p class="mt-6 font-semibold text-primary">
-        &mdash; our Vision
+        &mdash; {visionLabel}
       </p>
       <blockquote class="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-foreground md:text-xl">
-        &ldquo;When you step into Royal Priesthood Embassy, you are entering a space where the laws of this place are not Kenya&rsquo;s laws &mdash; you are entering the Kingdom. Whether you&rsquo;re exploring faith for the first time or you&rsquo;ve walked with Jesus for years, there is a place here for you. We can&rsquo;t wait to meet you.&rdquo;
+        &ldquo;{missionText}&rdquo;
       </blockquote>
       <p class="mt-6 font-semibold text-primary">
-        &mdash; Our Mission
+        &mdash; {missionLabel}
       </p>
     </div>
   </section>
+  )}
 
   {
-    config?.values && config.values.length > 0 && (
+    on("values") && values.length > 0 && (
       <section class="register-parchment section-padding">
         <div class="mx-auto max-w-7xl px-5 md:px-8">
           <div class="text-center">
-            <h2 class="font-display text-3xl text-foreground md:text-4xl">Our Values</h2>
+            <h2 class="font-display text-3xl text-foreground md:text-4xl">{valuesHeading}</h2>
             <p class="mx-auto mt-4 max-w-2xl text-muted-foreground">
-              The Mantle, Rod, and Sword — Identity, Authority, and Execution
+              {valuesSubtitle}
             </p>
           </div>
           <div class="mt-12 grid gap-8 md:grid-cols-3">
-            {config.values.map((value) => (
+            {values.map((value) => (
               <article class="card-hover glass-frost rounded-xl p-8 text-center">
                 <h3 class="font-display text-xl text-primary">{value.title}</h3>
                 <p class="mt-4 text-sm text-muted-foreground">{value.description}</p>
@@ -75,6 +108,7 @@ const otherLeaders = leaders.filter(
     )
   }
 
+  {on("leadership") && (
   <section id="leadership" class="register-celestial section-padding">
     <div class="mx-auto max-w-7xl px-5 md:px-8">
       <div class="text-center">
@@ -114,24 +148,36 @@ const otherLeaders = leaders.filter(
       }
     </div>
   </section>
+  )}
 
+  {on("theme-2026") && (
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-4xl px-5 text-center md:px-8">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-        2026 Theme
+        {themeEyebrow}
       </p>
       <h2 class="font-display mt-2 text-4xl text-foreground md:text-5xl">
-        {config?.theme2026?.title ?? site.theme2026.title}
+        {themeTitle}
       </h2>
       <p class="mt-4 text-xl text-foreground">
-        {config?.theme2026?.scripture ?? site.theme2026.scripture}
+        {themeScripture}
       </p>
       <p class="mt-6 text-lg text-muted-foreground">
-        {config?.theme2026?.scriptureText ?? site.theme2026.scriptureText}
+        {themeScriptureText}
       </p>
+      {
+        themeImage && (
+          <img
+            src={themeImage}
+            alt={`${themeTitle} poster`}
+            class="mx-auto mt-8 max-w-md rounded-xl border border-primary/20 shadow-lg"
+          />
+        )
+      }
       <div class="mt-8">
-        <Button href="/visit" variant="gold">Join Us</Button>
+        <Button href={themeButtonUrl} variant="gold">{themeButtonLabel}</Button>
       </div>
     </div>
   </section>
+  )}
 </Layout>

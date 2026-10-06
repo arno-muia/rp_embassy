@@ -15,12 +15,15 @@ import {
   getSiteConfig,
   getHomepage,
 } from "../lib/api";
+import { getSections, isEnabled } from "../lib/sections";
 import { churchSchema } from "../lib/seo";
 
-const [config, homepage] = await Promise.all([
+const [config, homepage, sectionFlags] = await Promise.all([
   getSiteConfig(),
   getHomepage(),
+  getSections(),
 ]);
+const on = (key: string) => isEnabled(sectionFlags, "homepage", key);
 const [events, latestSermon, testimonials] = await Promise.all([
   getUpcomingEvents(5),
   getLatestSermon(),
@@ -61,23 +64,23 @@ const sermonThumbnail = latestSermon?.thumbnail ?? "";
     window.__SERMON_THUMBNAIL__ = '{sermonThumbnail}';
   </script>
 
-  <HeroSection config={config} hero={homepage?.hero} />
+  {on("hero") && <HeroSection config={config} hero={homepage?.hero} />}
 
   <!-- Service Times Section -->
-  {homepage?.serviceTimes && homepage.serviceTimes.length > 0 && (
+  {on("service-times") && homepage?.serviceTimes && homepage.serviceTimes.length > 0 && (
     <ServiceTimesSection services={homepage.serviceTimes} />
   )}
 
   <!-- Upcoming Events Carousel -->
-  <EventsCarouselSection events={events} />
+  {on("upcoming-events") && <EventsCarouselSection events={events} />}
 
   <!-- What to Expect Section -->
-  {config?.whatToExpect && config.whatToExpect.length > 0 && (
+  {on("what-to-expect") && config?.whatToExpect && config.whatToExpect.length > 0 && (
     <WhatToExpectSection items={config.whatToExpect} />
   )}
 
   <!-- Latest Sermon -->
-  {latestSermon && (
+  {on("latest-sermon") && latestSermon && (
     <LatestSermonSection 
       sermon={latestSermon} 
       ctaText={homepage?.hero?.hero_cta_text}
@@ -86,10 +89,10 @@ const sermonThumbnail = latestSermon?.thumbnail ?? "";
   )}
 
   <!-- Testimonials Carousel -->
-  {testimonials.length > 0 && <TestimonialsSection testimonials={testimonials} sermonThumbnail={sermonThumbnail} />}
+  {on("testimonials") && testimonials.length > 0 && <TestimonialsSection testimonials={testimonials} sermonThumbnail={sermonThumbnail} />}
 
   <!-- Pastor Section -->
-  <PastorSection pastorProfile={homepage?.pastorProfile} />
+  {on("pastor-profile") && <PastorSection pastorProfile={homepage?.pastorProfile} />}
 
-  <CtaBannerSection serviceTimes={homepage?.serviceTimes} hero={homepage?.hero} />
+  {on("cta-banner") && <CtaBannerSection serviceTimes={homepage?.serviceTimes} hero={homepage?.hero} />}
 </Layout>

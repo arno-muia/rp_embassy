@@ -2,78 +2,147 @@
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import Button from "../components/ui/Button.astro";
-import { site } from "../lib/site";
+import { getGive } from "../lib/api";
+import { getSections, isEnabled } from "../lib/sections";
+
+const [give, sectionFlags] = await Promise.all([getGive(), getSections()]);
+const on = (key: string) => isEnabled(sectionFlags, "give", key);
+
+// Partner (Give) section content is admin-managed — every component below is
+// edited from the admin's Partner group and served by /api/give:
+//   Admin → Partner → Page Hero / Why We Give / M-Pesa Giving / Where Giving Goes
+// Fallbacks equal the original copy, so rendering is unchanged when the API
+// is unreachable. GiveMpesaSection is the canonical till/account source;
+// legacy site.giving fallbacks below are only used when the API is down.
+const hero = give?.hero ?? {
+  title: "Give",
+  subtitle:
+    "Your generosity fuels community outreach, global missions, and the daily work of the Kingdom Embassy.",
+  scripture: "2 Corinthians 9:7",
+  register: "warm",
+  image: "",
+  image_alt: "",
+};
+
+const why = give?.why ?? {
+  eyebrow: "",
+  heading: "",
+  body: "We give because God first gave — generously, sacrificially, and with joy. Your giving is an act of worship and partnership in advancing the Gospel. Every contribution, whether large or small, makes a Kingdom impact in Thika and beyond.",
+};
+
+const mpesa = give?.mpesa ?? {
+  eyebrow: "M-Pesa Giving",
+  till_number: "8598004",
+  till_caption: "Till Number",
+  account_name: "Salome Njuguna Waruguru",
+  instructions:
+    "Go to M-Pesa → Lipa na M-Pesa → Buy Goods and Services → Enter Till Number",
+  button_label: "Need Help Giving?",
+  button_url: "/contact",
+};
+
+const allocation = give?.allocation ?? {
+  heading: "Where Your Giving Goes",
+  subtitle: "",
+  items: [
+    { id: 0, title: "Community Programs", percentage: "35%", description: "Local outreach and support in Thika", image: "", image_alt: "", sort_order: 0 },
+    { id: 1, title: "Global Missions", percentage: "30%", description: "Church planting and missionary support", image: "", image_alt: "", sort_order: 1 },
+    { id: 2, title: "Ministry Operations", percentage: "25%", description: "Facilities, media, and resources", image: "", image_alt: "", sort_order: 2 },
+    { id: 3, title: "Benevolence Fund", percentage: "10%", description: "Emergency assistance for families in crisis", image: "", image_alt: "", sort_order: 3 },
+  ],
+};
 ---
 
 <Layout
-  title="Give"
-  description="Give to Royal Priesthood Embassy. M-Pesa Till 8598004."
+  title={hero.title}
+  description={`Give to Royal Priesthood Embassy. M-Pesa Till ${mpesa.till_number}.`}
 >
+  {on("page-hero") && (
   <PageHero
-    title="Give"
-    subtitle="Your generosity fuels community outreach, global missions, and the daily work of the Kingdom Embassy."
-    register="warm"
-    scripture="2 Corinthians 9:7"
+    title={hero.title}
+    subtitle={hero.subtitle || undefined}
+    register={(hero.register as "celestial" | "parchment" | "warm") || "warm"}
+    scripture={hero.scripture || undefined}
   />
+  )}
 
+  {on("why-we-give") && (
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-4xl px-5 md:px-8 text-center">
+      {why.eyebrow && (
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          {why.eyebrow}
+        </p>
+      )}
+      {why.heading && (
+        <h2 class="font-display mt-2 text-2xl text-foreground">{why.heading}</h2>
+      )}
       <p class="mt-6 text-lg leading-relaxed text-muted-foreground">
-        We give because God first gave — generously, sacrificially, and with joy.
-        Your giving is an act of worship and partnership in advancing the Gospel.
-        Every contribution, whether large or small, makes a Kingdom impact in
-        Thika and beyond.
+        {why.body}
       </p>
     </div>
   </section>
+  )}
 
+  {on("mpesa-giving") && (
   <section class="register-parchment section-padding">
     <div class="mx-auto max-w-2xl px-5 md:px-8">
       <div class="glass-gold rounded-2xl p-8 text-center">
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-          M-Pesa Giving
+          {mpesa.eyebrow}
         </p>
         <p
           class="font-data mt-4 text-5xl tracking-wide text-foreground md:text-6xl"
         >
-          {site.giving.mpesaTill}
+          {mpesa.till_number}
         </p>
-        <p class="mt-2 text-muted-foreground">Till Number</p>
+        <p class="mt-2 text-muted-foreground">{mpesa.till_caption}</p>
         <p class="mt-6 font-semibold text-foreground">
-          {site.giving.accountName}
+          {mpesa.account_name}
         </p>
+        {mpesa.instructions && (
         <p class="mt-4 text-sm text-muted-foreground">
-          Go to M-Pesa → Lipa na M-Pesa → Buy Goods and Services → Enter Till
-          Number
+          {mpesa.instructions}
         </p>
+        )}
         <div class="mt-8">
-          <Button href="/contact" variant="primary">Need Help Giving?</Button>
+          <Button href={mpesa.button_url} variant="primary">{mpesa.button_label}</Button>
         </div>
       </div>
     </div>
   </section>
+  )}
 
+  {on("where-giving-goes") && (
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-4xl px-5 md:px-8">
-      <h2 class="font-display text-2xl text-foreground">Where Your Giving Goes</h2>
+      <h2 class="font-display text-2xl text-foreground">{allocation.heading}</h2>
+      {allocation.subtitle && (
+        <p class="mt-4 text-muted-foreground">{allocation.subtitle}</p>
+      )}
       <div class="mt-8 grid gap-6 sm:grid-cols-2">
         {
-          [
-            { title: "Community Programs", pct: "35%", desc: "Local outreach and support in Thika" },
-            { title: "Global Missions", pct: "30%", desc: "Church planting and missionary support" },
-            { title: "Ministry Operations", pct: "25%", desc: "Facilities, media, and resources" },
-            { title: "Benevolence Fund", pct: "10%", desc: "Emergency assistance for families in crisis" },
-          ].map((item) => (
+          allocation.items.map((item) => (
             <div class="glass-frost rounded-xl p-6">
+              {item.image && (
+                <img
+                  src={item.image}
+                  alt={item.image_alt || `${item.title} image`}
+                  class="mb-4 w-full rounded-lg border border-primary/20"
+                />
+              )}
               <div class="flex items-center justify-between">
                 <h3 class="font-semibold text-foreground">{item.title}</h3>
-                <span class="font-data text-2xl text-primary">{item.pct}</span>
+                {item.percentage && (
+                <span class="font-data text-2xl text-primary">{item.percentage}</span>
+                )}
               </div>
-              <p class="mt-2 text-sm text-muted-foreground">{item.desc}</p>
+              <p class="mt-2 text-sm text-muted-foreground">{item.description}</p>
             </div>
           ))
         }
       </div>
     </div>
   </section>
+  )}
 </Layout>

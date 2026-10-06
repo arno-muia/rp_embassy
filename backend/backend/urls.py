@@ -2,6 +2,8 @@
 URL configuration for backend project.
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.decorators import api_view, permission_classes
@@ -25,5 +27,10 @@ urlpatterns = [
     path('api/', include('backend.apps.content.urls')),
     path('api/', include('backend.apps.events.urls')),
     path('api/', include('backend.apps.prayer.urls')),
+    path('api/', include('backend.apps.media.urls')),
     path('api/health', health_check, name='health-check'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

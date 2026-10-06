@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from backend.apps.media.widgets import RealtimeImageUploadWidget
 from .models import ChurchEvent, HomepageUpcomingEvent, EventRegistration, Announcement
 
 
@@ -9,20 +10,26 @@ class ChurchEventAdmin(admin.ModelAdmin):
         'title', 'type', 'status', 'start_date_time', 'end_date_time',
         'location', 'registration_required', 'created_by', 'updated_at'
     )
-    search_fields = ('title', 'description', 'location', 'speaker', 'agenda')
+    search_fields = ('title', 'description', 'location')
     list_filter = ('type', 'status', 'registration_required', 'start_date_time')
     list_editable = ('status', 'registration_required')
     readonly_fields = ('created_at', 'updated_at')
     ordering = ('-start_date_time', '-updated_at')
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'image_url':
+            kwargs['widget'] = RealtimeImageUploadWidget(folder='events')
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
     fieldsets = (
         ('Event Details', {
-            'fields': ('title', 'description', 'type', 'status', 'location', 'image_url', 'agenda')
+            'fields': ('title', 'description', 'type', 'status', 'location', 'image_url', 'gallery_url')
         }),
         ('Schedule', {
-            'fields': ('start_date_time', 'end_date_time', 'registration_open_date', 'expiry_date')
+            'fields': ('start_date_time', 'end_date_time', 'registration_open_date')
         }),
         ('Registration', {
-            'fields': ('registration_required', 'max_attendees', 'cost_cents', 'payment_details')
+            'fields': ('registration_required', 'max_attendees', 'cost_cents')
         }),
         ('Audit', {
             'fields': ('created_by', 'created_at', 'updated_at'),

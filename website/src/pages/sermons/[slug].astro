@@ -4,7 +4,8 @@ import PageHero from "../../components/shared/PageHero.astro";
 import SermonCard from "../../components/content/SermonCard.astro";
 import Button from "../../components/ui/Button.astro";
 
-import { getSermonBySlug, getRelatedSermons, getSermons } from "../../lib/api";
+import { getSermonBySlug, getRelatedSermons, getSermons, getSermonsPage } from "../../lib/api";
+import type { SermonDetailContent, SermonsRelatedContent } from "../../lib/api";
 import { formatDate } from "../../lib/format";
 
 
@@ -22,7 +23,22 @@ const sermon = slug ? await getSermonBySlug(slug) : undefined;
 
 if (!sermon) return Astro.redirect("/sermons");
 
-const related = await getRelatedSermons(sermon);
+const [related, sermonsPage] = await Promise.all([
+  getRelatedSermons(sermon),
+  getSermonsPage(),
+]);
+
+// Fallbacks = the original hardcoded copy when the API is unreachable.
+const detailFallback: SermonDetailContent = {
+  video_note: "Watch this teaching on our YouTube channel",
+  watch_button_label: "Watch on YouTube",
+  secondary_button_label: "Kingdom Formation",
+  secondary_button_url: "/academy",
+};
+const detail = sermonsPage?.detail ?? detailFallback;
+
+const relatedFallback: SermonsRelatedContent = { heading: "Related Sermons" };
+const relatedHeading = sermonsPage?.related ?? relatedFallback;
 ---
 
 <Layout title={sermon.title} description={sermon.description}>
@@ -47,10 +63,10 @@ const related = await getRelatedSermons(sermon);
           class="absolute inset-0 flex flex-col items-center justify-center gap-4"
         >
           <p class="text-center text-ivory-100/90">
-            Watch this teaching on our YouTube channel
+            {detail.video_note}
           </p>
           <Button href={sermon.videoUrl} variant="gold" external>
-            Watch on YouTube
+            {detail.watch_button_label}
           </Button>
         </div>
       </div>
@@ -64,9 +80,9 @@ const related = await getRelatedSermons(sermon);
       }
       <div class="mt-6 flex flex-wrap gap-4">
         <Button href={sermon.videoUrl} variant="primary" external>
-          Watch on YouTube
+          {detail.watch_button_label}
         </Button>
-        <Button href="/academy" variant="secondary">Kingdom Formation</Button>
+        <Button href={detail.secondary_button_url} variant="secondary">{detail.secondary_button_label}</Button>
       </div>
     </div>
   </section>
@@ -75,7 +91,7 @@ const related = await getRelatedSermons(sermon);
     related.length > 0 && (
       <section class="register-parchment section-padding">
         <div class="mx-auto max-w-7xl px-5 md:px-8">
-          <h2 class="font-display text-2xl text-foreground">Related Sermons</h2>
+          <h2 class="font-display text-2xl text-foreground">{relatedHeading.heading}</h2>
           <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((s) => (
               <SermonCard sermon={s} />

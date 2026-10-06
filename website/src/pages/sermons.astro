@@ -1,46 +1,78 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import SermonCard from "../components/content/SermonCard.astro";
-import { getSermons, getSeries } from "../lib/api";
+import { getSermons, getSeries, getSermonsPage } from "../lib/api";
+import type { SermonsHeroContent, SermonsBrowseContent, SermonsGridContent } from "../lib/api";
+import { getSections, isEnabled } from "../lib/sections";
 
-const sermons = await getSermons();
-const series = await getSeries();
+const [sermons, series, sermonsPage, sectionFlags] = await Promise.all([
+  getSermons(),
+  getSeries(),
+  getSermonsPage(),
+  getSections(),
+]);
+const on = (key: string) => isEnabled(sectionFlags, "sermons", key);
+
+// Fallbacks = the original hardcoded copy when the API is unreachable.
+const heroFallback: SermonsHeroContent = {
+  image: "/images/Thumbnail_final.jpg",
+  image_alt: "Latest Teaching",
+  label: "Latest sermon",
+  preacher: "Pst Charles Muchemi",
+  title: "Emotional Intelligence",
+  button_label: "Watch Sermon →",
+  button_url: "/sermons",
+  register: "celestial",
+};
+const hero = sermonsPage?.hero ?? heroFallback;
+
+const browseFallback: SermonsBrowseContent = { heading: "Browse by Series" };
+const browse = sermonsPage?.browse ?? browseFallback;
+
+const gridFallback: SermonsGridContent = {
+  heading: "All Sermons",
+  empty_text: "No sermons available yet.",
+};
+const grid = sermonsPage?.grid ?? gridFallback;
 ---
 
 <Layout title="Sermons" description="Watch and listen to teachings from Royal Priesthood Embassy.">
+  {on("page-hero") && (
   <section class="relative overflow-hidden register-celestial -mt-4 pb-0">
     <img
-      src="/images/Thumbnail_final.jpg"
-      alt="Latest Teaching"
+      src={hero.image}
+      alt={hero.image_alt}
       class="w-full h-96 md:h-[48rem] object-cover"
     />
     <div class="absolute inset-0">
       <div class="relative h-full w-full px-5 md:px-8">
         <!-- "Watch latest sermon" at middle left -->
         <div class="absolute left-12 top-1/2 -translate-y-1/2">
-          <p class="font-bold text-8xl text-white ml-8">Latest sermon</p>
+          <p class="font-bold text-8xl text-white ml-8">{hero.label}</p>
         </div>
         
         <!-- Bottom left content: text and link -->
         <div class="absolute bottom-20 left-12 flex flex-col gap-4">
           <div class="ml-8">
-            <p class="text-lg text-white">Pst Charles Muchemi</p>
-            <h2 class="font-display text-3xl text-charcoal md:text-4xl">Emotional Intelligence</h2>
+            <p class="text-lg text-white">{hero.preacher}</p>
+            <h2 class="font-display text-3xl text-charcoal md:text-4xl">{hero.title}</h2>
           </div>
           <a
-            href="/sermons"
+            href={hero.button_url}
             class="text-white text-lg font-medium hover:underline ml-8"
           >
-            Watch Sermon →
+            {hero.button_label}
           </a>
         </div>
       </div>
     </div>
   </section>
+  )}
 
+  {on("browse-by-series") && (
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-7xl px-5 md:px-8">
-      <h2 class="font-display text-2xl text-foreground">Browse by Series</h2>
+      <h2 class="font-display text-2xl text-foreground">{browse.heading}</h2>
       <div class="mt-6 flex flex-wrap gap-3">
         {
           series.map((s) => (
@@ -55,10 +87,12 @@ const series = await getSeries();
       </div>
     </div>
   </section>
+  )}
 
+  {on("sermons-grid") && (
   <section class="register-parchment section-padding">
     <div class="mx-auto max-w-7xl px-5 md:px-8">
-      <h2 class="font-display text-2xl text-foreground">All Sermons</h2>
+      <h2 class="font-display text-2xl text-foreground">{grid.heading}</h2>
       {
         sermons.length > 0 ? (
           <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -67,9 +101,10 @@ const series = await getSeries();
             ))}
           </div>
         ) : (
-          <p class="mt-6 text-muted-foreground">No sermons available yet.</p>
+          <p class="mt-6 text-muted-foreground">{grid.empty_text}</p>
         )
       }
     </div>
   </section>
+  )}
 </Layout>

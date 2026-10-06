@@ -25,10 +25,15 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kxb#b=gg8mhav2qn#n531!eqk^9hhxwb)s#6e4p_(e1-k52@2b'
+# Loaded from the environment (see backend/.env.example). The insecure
+# fallback below is dev-only and must never be used in production.
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-kxb#b=gg8mhav2qn#n531!eqk^9hhxwb)s#6e4p_(e1-k52@2b',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '0.0.0.0']
 
@@ -150,6 +155,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Media files (User uploaded images and files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

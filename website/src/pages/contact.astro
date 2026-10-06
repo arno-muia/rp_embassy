@@ -3,51 +3,127 @@ import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import ContactForm from "../components/forms/ContactForm.astro";
 import { site } from "../lib/site";
+import { getContactPage } from "../lib/api";
+import { getSections, isEnabled } from "../lib/sections";
+
+const [contact, sectionFlags] = await Promise.all([
+  getContactPage(),
+  getSections(),
+]);
+const on = (key: string) => isEnabled(sectionFlags, "contact", key);
+
+// Contact section content is admin-managed — every component below is
+// edited from the admin's Contact group and served by /api/contact-page:
+//   Admin → Contact → Page Hero / Contact Details / Contact Form
+// Fallbacks equal the original copy, so rendering is unchanged when the API
+// is unreachable. Blank details fields fall back to the canonical
+// site.contact / site.address values.
+const hero = contact?.hero ?? {
+  title: "Contact Us",
+  subtitle:
+    "We'd love to hear from you. Reach out with questions, prayer requests, or to plan your visit.",
+  scripture: "",
+  register: "parchment",
+  image: "",
+  image_alt: "",
+};
+
+const details = contact?.details ?? {
+  email_heading: "Email",
+  email_address: "",
+  location_heading: "Location",
+  street: "",
+  city: "",
+  country: "",
+  maps_url: "",
+  directions_label: "Get Directions →",
+  social_heading: "Social Media",
+  social_links: [] as Array<{
+    id: number;
+    network: string;
+    label: string;
+    url: string;
+    sort_order: number;
+  }>,
+};
+
+const form = contact?.form ?? {
+  heading: "Send a Message",
+  name_label: "Name",
+  email_label: "Email",
+  phone_label: "Phone (optional)",
+  message_label: "Message",
+  submit_label: "Send Message",
+  sending_label: "Sending…",
+  success_message: "Message sent! We'll be in touch soon.",
+  error_message: "Something went wrong. Please email us directly.",
+};
+
+const email = details.email_address || site.contact.email;
+const street = details.street || site.address.street;
+const city = details.city || site.address.city;
+const country = details.country || site.address.country;
+const mapsUrl = details.maps_url || site.address.mapsUrl;
+const socials =
+  details.social_links.length > 0
+    ? details.social_links.map((link) => ({
+        label: link.label || link.network.charAt(0).toUpperCase() + link.network.slice(1),
+        href: link.url,
+      }))
+    : Object.entries(site.social).map(([network, href]) => ({
+        label: network.charAt(0).toUpperCase() + network.slice(1),
+        href,
+      }));
 ---
 
 <Layout
   title="Contact"
   description="Contact Royal Priesthood Embassy in Thika, Kenya."
 >
+  {on("page-hero") && (
   <PageHero
-    title="Contact Us"
-    subtitle="We'd love to hear from you. Reach out with questions, prayer requests, or to plan your visit."
-    register="parchment"
+    title={hero.title}
+    subtitle={hero.subtitle || undefined}
+    register={(hero.register as "celestial" | "parchment" | "warm") || "parchment"}
+    scripture={hero.scripture || undefined}
   />
+  )}
+
+  {on("contact-details") && (
   <section class="register-celestial section-padding">
     <div class="mx-auto max-w-4xl px-5 md:px-8">
       <div class="grid gap-12 lg:grid-cols-2">
         <div class="space-y-8">
           <div>
-            <h2 class="font-display text-lg text-primary">Email</h2>
+            <h2 class="font-display text-lg text-primary">{details.email_heading}</h2>
             <a
-              href={`mailto:${site.contact.email}`}
+              href={`mailto:${email}`}
               class="mt-2 block text-muted-foreground transition-colors hover:text-primary"
             >
-              {site.contact.email}
+              {email}
             </a>
           </div>
           <div>
-            <h2 class="font-display text-lg text-primary">Location</h2>
+            <h2 class="font-display text-lg text-primary">{details.location_heading}</h2>
             <p class="mt-2 text-muted-foreground">
-              {site.address.street}
+              {street}
               <br />
-              {site.address.city}, {site.address.country}
+              {city}, {country}
             </p>
             <a
-              href={site.address.mapsUrl}
+              href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               class="mt-2 inline-block text-sm font-semibold text-primary hover:text-gold-600"
             >
-              Get Directions →
+              {details.directions_label}
             </a>
           </div>
           <div>
-            <h2 class="font-display text-lg text-primary">Social Media</h2>
+            <h2 class="font-display text-lg text-primary">{details.social_heading}</h2>
             <ul class="mt-2 space-y-2">
               {
-                Object.entries(site.social).map(([network, href]) => (
+                socials.map(({ label, href }) => (
                   <li>
                     <a
                       href={href}
@@ -55,7 +131,7 @@ import { site } from "../lib/site";
                       rel="noopener noreferrer"
                       class="capitalize text-muted-foreground transition-colors hover:text-primary"
                     >
-                      {network}
+                      {label}
                     </a>
                   </li>
                 ))
@@ -64,9 +140,20 @@ import { site } from "../lib/site";
           </div>
         </div>
         <div>
-          <ContactForm />
+          <ContactForm
+            heading={form.heading}
+            nameLabel={form.name_label}
+            emailLabel={form.email_label}
+            phoneLabel={form.phone_label}
+            messageLabel={form.message_label}
+            submitLabel={form.submit_label}
+            sendingLabel={form.sending_label}
+            successMessage={form.success_message}
+            errorMessage={form.error_message}
+          />
         </div>
       </div>
     </div>
   </section>
+  )}
 </Layout>

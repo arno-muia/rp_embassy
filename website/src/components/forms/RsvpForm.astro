@@ -1,6 +1,26 @@
 ---
 import { API_ENDPOINTS } from "../../lib/api";
 
+interface Props {
+  heading?: string;
+  subheading?: string;
+  submitLabel?: string;
+  successTitle?: string;
+  successMessage?: string;
+}
+
+// B5.7 — Visit RSVP copy is admin-managed (VisitRsvpSection) and passed in by
+// the page; defaults keep the component usable standalone.
+const {
+  heading = "RSVP for Your Visit",
+  subheading =
+    "Let us know you're coming so our hospitality team can greet you personally.",
+  submitLabel = "Confirm RSVP",
+  successTitle = "You're on the list!",
+  successMessage =
+    "Our hospitality team has received your RSVP and will prepare a warm welcome for you.",
+} = Astro.props;
+
 const formShellClass = "space-y-6 glass-frost rounded-2xl p-8";
 const labelClass = "block text-sm font-medium text-foreground";
 const inputClass =
@@ -11,9 +31,9 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
 <div id="rsvp-container" data-endpoint={API_ENDPOINTS.rsvp}>
   <form id="rsvp-form" class={formShellClass}>
     <div>
-      <h2 class="font-display text-2xl text-foreground">RSVP for Your Visit</h2>
+      <h2 class="font-display text-2xl text-foreground">{heading}</h2>
       <p class="mt-1 text-sm text-muted-foreground">
-        Let us know you're coming so our hospitality team can greet you personally.
+        {subheading}
       </p>
     </div>
 
@@ -94,7 +114,7 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
       type="submit"
       class="btn-primary-gold w-full rounded-md px-6 py-3 text-sm font-semibold text-white"
     >
-      Confirm RSVP
+      {submitLabel}
     </button>
 
     <p data-error class="hidden text-sm text-rp-danger" role="alert"></p>
@@ -104,9 +124,9 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rp-success/10 text-rp-success">
       ✓
     </div>
-    <h2 class="font-display mt-4 text-2xl text-foreground">You're on the list!</h2>
+    <h2 class="font-display mt-4 text-2xl text-foreground">{successTitle}</h2>
     <p class="mt-2 text-muted-foreground">
-      Our hospitality team has received your RSVP and will prepare a warm welcome for you.
+      {successMessage}
     </p>
     <button
       id="reset-rsvp"
@@ -139,6 +159,7 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
       notes: data.notes || undefined,
     };
     const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    const initialLabel = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Submitting…";
     try {
@@ -155,7 +176,7 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
       err.className = "text-sm text-rp-danger";
       err.textContent = errMsg instanceof Error ? errMsg.message : "Something went wrong. Please contact us directly.";
       btn.disabled = false;
-      btn.textContent = "Confirm RSVP";
+      btn.textContent = initialLabel ?? "Confirm RSVP";
     }
   });
   

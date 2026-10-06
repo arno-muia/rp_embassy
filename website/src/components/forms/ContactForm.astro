@@ -1,6 +1,32 @@
 ---
 import { API_ENDPOINTS } from "../../lib/api";
 
+interface Props {
+  heading?: string;
+  nameLabel?: string;
+  emailLabel?: string;
+  phoneLabel?: string;
+  messageLabel?: string;
+  submitLabel?: string;
+  sendingLabel?: string;
+  successMessage?: string;
+  errorMessage?: string;
+}
+
+// Contact form copy is admin-managed (Contact → Contact Form) — defaults
+// equal the original copy so rendering is unchanged when the API is down.
+const {
+  heading = "Send a Message",
+  nameLabel = "Name",
+  emailLabel = "Email",
+  phoneLabel = "Phone (optional)",
+  messageLabel = "Message",
+  submitLabel = "Send Message",
+  sendingLabel = "Sending…",
+  successMessage = "Message sent! We'll be in touch soon.",
+  errorMessage = "Something went wrong. Please email us directly.",
+} = Astro.props;
+
 const formShellClass = "space-y-6 glass-frost rounded-2xl p-8";
 const labelClass = "block text-sm font-medium text-foreground";
 const inputClass =
@@ -8,22 +34,30 @@ const inputClass =
 const textareaClass = `${inputClass} resize-y min-h-[120px]`;
 ---
 
-<form id="contact-form" class={formShellClass} data-endpoint={API_ENDPOINTS.contact}>
-  <h2 class="font-display text-2xl text-foreground">Send a Message</h2>
+<form
+  id="contact-form"
+  class={formShellClass}
+  data-endpoint={API_ENDPOINTS.contact}
+  data-submit-label={submitLabel}
+  data-sending-label={sendingLabel}
+  data-success-message={successMessage}
+  data-error-message={errorMessage}
+>
+  <h2 class="font-display text-2xl text-foreground">{heading}</h2>
   <div>
-    <label for="name" class={labelClass}>Name</label>
+    <label for="name" class={labelClass}>{nameLabel}</label>
     <input id="name" name="name" type="text" required class={inputClass} />
   </div>
   <div>
-    <label for="email" class={labelClass}>Email</label>
+    <label for="email" class={labelClass}>{emailLabel}</label>
     <input id="email" name="email" type="email" required class={inputClass} />
   </div>
   <div>
-    <label for="phone" class={labelClass}>Phone (optional)</label>
+    <label for="phone" class={labelClass}>{phoneLabel}</label>
     <input id="phone" name="phone" type="tel" class={inputClass} />
   </div>
   <div>
-    <label for="message" class={labelClass}>Message</label>
+    <label for="message" class={labelClass}>{messageLabel}</label>
     <textarea
       id="message"
       name="message"
@@ -44,7 +78,7 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
     type="submit"
     class="btn-primary-gold w-full rounded-md px-6 py-3 text-sm font-semibold text-white"
   >
-    Send Message
+    {submitLabel}
   </button>
   <p data-status class="hidden text-sm"></p>
 </form>
@@ -57,8 +91,15 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
     const data = Object.fromEntries(new FormData(form));
     if (data.honeypot) return;
     const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    const submitLabel = form.dataset.submitLabel || "Send Message";
+    const sendingLabel = form.dataset.sendingLabel || "Sending…";
+    const successMessage =
+      form.dataset.successMessage || "Message sent! We'll be in touch soon.";
+    const errorMessage =
+      form.dataset.errorMessage ||
+      "Something went wrong. Please email us directly.";
     btn.disabled = true;
-    btn.textContent = "Sending…";
+    btn.textContent = sendingLabel;
     status.className = "text-sm text-muted-foreground";
     status.textContent = "";
     try {
@@ -69,14 +110,14 @@ const textareaClass = `${inputClass} resize-y min-h-[120px]`;
       });
       if (!res.ok) throw new Error("Failed");
       status.className = "text-sm text-rp-success";
-      status.textContent = "Message sent! We'll be in touch soon.";
+      status.textContent = successMessage;
       form.reset();
     } catch {
       status.className = "text-sm text-rp-danger";
-      status.textContent = "Something went wrong. Please email us directly.";
+      status.textContent = errorMessage;
     } finally {
       btn.disabled = false;
-      btn.textContent = "Send Message";
+      btn.textContent = submitLabel;
     }
   });
 </script>

@@ -21,6 +21,24 @@ const API_BASE_URL =
   import.meta.env.PUBLIC_API_URL?.replace(/\/$/, "") ||
   "http://127.0.0.1:8000";
 
+/** Base URL for Django-served media files (/media/...).
+ *  Falls back to PUBLIC_API_URL so dev works with zero extra config;
+ *  set PUBLIC_MEDIA_URL in production for CDN/S3 without code changes. */
+export const MEDIA_BASE_URL =
+  import.meta.env.PUBLIC_MEDIA_URL?.replace(/\/$/, "") || API_BASE_URL;
+
+/** Resolve a stored image path to a browser-loadable URL.
+ *  - `/media/...` → absolute Django/CDN URL (fixes cross-origin 404
+ *    where the browser would otherwise request it from the Astro origin).
+ *  - `/images/...`, absolute http(s), data:, blob: → returned untouched
+ *    (Astro-local static assets and remote URLs keep working). */
+export function resolveMediaUrl(path?: string | null): string {
+  if (!path) return "";
+  if (/^(https?:\/\/|data:|blob:)/i.test(path)) return path;
+  if (path.startsWith("/media/")) return `${MEDIA_BASE_URL}${path}`;
+  return path;
+}
+
 /** Endpoint definitions — all pointed at the Django backend. */
 export const API_ENDPOINTS = {
   sermons: `${API_BASE_URL}/api/sermons`,
@@ -33,8 +51,14 @@ export const API_ENDPOINTS = {
   testimonials: `${API_BASE_URL}/api/testimonials`,
   academy: `${API_BASE_URL}/api/academy`,
   siteConfig: `${API_BASE_URL}/api/site-config`,
+  sections: `${API_BASE_URL}/api/sections`,
   homepage: `${API_BASE_URL}/api/homepage`,
+  about: `${API_BASE_URL}/api/about`,
+  visit: `${API_BASE_URL}/api/visit`,
+  sermonsPage: `${API_BASE_URL}/api/sermons-page`,
+  give: `${API_BASE_URL}/api/give`,
   contact: `${API_BASE_URL}/api/contact`,
+  contactPage: `${API_BASE_URL}/api/contact-page`,
   prayer: `${API_BASE_URL}/api/prayer`,
   rsvp: `${API_BASE_URL}/api/rsvp`,
   health: `${API_BASE_URL}/api/health`,
@@ -79,7 +103,7 @@ export function toSermonView(s: Sermon): SermonView {
     videoUrl: s.video_url,
     audioUrl: s.audio_url,
     notesUrl: s.notes_url,
-    thumbnail: s.thumbnail_url,
+    thumbnail: resolveMediaUrl(s.thumbnail_url),
     duration: s.duration,
     tags: s.tags ?? [],
     published: s.is_published,
@@ -92,7 +116,7 @@ export function toSeriesView(s: SermonSeries): SeriesView {
     slug: s.slug,
     title: s.title,
     description: s.description,
-    image: s.image_url,
+    image: resolveMediaUrl(s.image_url),
     sermonCount: s.sermon_count,
   };
 }
@@ -132,7 +156,7 @@ export function toEventView(e: Event): EventView {
     endDate,
     endTime,
     location: e.location ?? "Thika, Kenya",
-    image: e.image_url ?? "/images/posters/kingdom-formation.jpeg",
+    image: resolveMediaUrl(e.image_url) || "/images/posters/kingdom-formation.jpeg",
     category: e.type || "OTHER",
     categoryLabel: EVENT_CATEGORY_LABELS[e.type] || "Special Event",
     registrationRequired: e.registration_required,
@@ -150,7 +174,7 @@ export function toLeaderView(l: Leader): LeaderView {
     name: l.name,
     role: l.role,
     bio: l.bio,
-    photo: l.photo_url,
+    photo: resolveMediaUrl(l.photo_url),
     order: l.sort_order,
     social: l.social,
   };
@@ -162,7 +186,7 @@ export function toTestimonialView(t: Testimonial): TestimonialView {
     quote: t.quote,
     name: t.name,
     role: t.role,
-    photo: t.photo_url,
+    photo: resolveMediaUrl(t.photo_url),
   };
 }
 
@@ -378,6 +402,7 @@ export interface SiteConfig {
   social: { instagram: string; facebook: string; youtube: string };
   giving: { mpesaTill: string; accountName: string };
   academyUrl: string;
+  heroBackgroundImage?: string;
   welcomeMessage?: { title: string; message: string; author?: string };
   whatToExpect?: { title: string; description: string; icon: string }[];
   beliefs?: { id: string; title: string; description: string }[];
@@ -393,7 +418,337 @@ export interface SiteConfig {
 
 export async function getSiteConfig(): Promise<SiteConfig | undefined> {
   try {
-    return await getJson<SiteConfig>(API_ENDPOINTS.siteConfig);
+    const data = await getJson<SiteConfig>(API_ENDPOINTS.siteConfig);
+    // Same /media/... origin fix — heroBackgroundImage bypasses mappers.
+    if (data?.heroBackgroundImage) {
+      return {
+        ...data,
+        heroBackgroundImage: resolveMediaUrl(data.heroBackgroundImage),
+      };
+    }
+    return data;
+  } catch {
+    return undefined;
+  }
+}
+
+/* ---------- About page section content (B5.5 — admin-managed) ---------- */
+
+export interface AboutIntroContent {
+  eyebrow: string;
+  title: string;
+  vision_label: string;
+  vision_text: string;
+  mission_label: string;
+  mission_text: string;
+}
+
+export interface AboutValueItem {
+  id: number;
+  title: string;
+  description: string;
+  sort_order: number;
+}
+
+export interface AboutValuesContent {
+  heading: string;
+  subtitle: string;
+  items: AboutValueItem[];
+}
+
+export interface AboutThemeContent {
+  eyebrow: string;
+  title: string;
+  scripture: string;
+  scripture_text: string;
+  image: string;
+  button_label: string;
+  button_url: string;
+}
+
+export interface AboutContent {
+  intro: AboutIntroContent | null;
+  values: AboutValuesContent | null;
+  theme: AboutThemeContent | null;
+}
+
+export async function getAbout(): Promise<AboutContent | undefined> {
+  try {
+    const data = await getJson<AboutContent>(API_ENDPOINTS.about);
+    // Same /media/... origin fix as homepage — theme image bypasses mappers.
+    if (data?.theme && typeof data.theme.image === "string") {
+      return {
+        ...data,
+        theme: { ...data.theme, image: resolveMediaUrl(data.theme.image) },
+      };
+    }
+    return data;
+  } catch {
+    return undefined;
+  }
+}
+
+/* ---------- Visit page section content (B5.7 — admin-managed) ---------- */
+
+export interface VisitHeroContent {
+  title: string;
+  subtitle: string;
+  scripture: string;
+  variant: string;
+}
+
+export interface VisitLocationContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+  button_label: string;
+  button_url: string;
+  map_embed_url: string;
+  map_title: string;
+}
+
+export interface VisitExpectItem {
+  id: number;
+  step: string;
+  description: string;
+  icon: string;
+  sort_order: number;
+}
+
+export interface VisitExpectContent {
+  eyebrow: string;
+  title: string;
+  items: VisitExpectItem[];
+}
+
+export interface VisitFaqItem {
+  id: number;
+  question: string;
+  answer: string;
+  sort_order: number;
+}
+
+export interface VisitFaqsContent {
+  title: string;
+  items: VisitFaqItem[];
+}
+
+export interface VisitRsvpContent {
+  heading: string;
+  subheading: string;
+  submit_label: string;
+  success_title: string;
+  success_message: string;
+}
+
+export interface VisitComingSundayContent {
+  title: string;
+  description: string;
+  button_label: string;
+  button_url: string;
+}
+
+export interface VisitContent {
+  hero: VisitHeroContent | null;
+  location: VisitLocationContent | null;
+  expect: VisitExpectContent | null;
+  faqs: VisitFaqsContent | null;
+  rsvp: VisitRsvpContent | null;
+  comingSunday: VisitComingSundayContent | null;
+}
+
+export async function getVisit(): Promise<VisitContent | undefined> {
+  try {
+    // Text-only payload — no image fields, so no resolveMediaUrl needed.
+    return await getJson<VisitContent>(API_ENDPOINTS.visit);
+  } catch {
+    return undefined;
+  }
+}
+
+/* ---------- Sermons page section content (B5.8 — admin-managed) ---------- */
+
+export interface SermonsHeroContent {
+  image: string;
+  image_alt: string;
+  label: string;
+  preacher: string;
+  title: string;
+  button_label: string;
+  button_url: string;
+  register: string;
+}
+
+export interface SermonsBrowseContent {
+  heading: string;
+}
+
+export interface SermonsGridContent {
+  heading: string;
+  empty_text: string;
+}
+
+export interface SermonDetailContent {
+  video_note: string;
+  watch_button_label: string;
+  secondary_button_label: string;
+  secondary_button_url: string;
+}
+
+export interface SermonsRelatedContent {
+  heading: string;
+}
+
+export interface SermonsPageContent {
+  hero: SermonsHeroContent | null;
+  browse: SermonsBrowseContent | null;
+  grid: SermonsGridContent | null;
+  detail: SermonDetailContent | null;
+  related: SermonsRelatedContent | null;
+}
+
+export async function getSermonsPage(): Promise<SermonsPageContent | undefined> {
+  try {
+    const data = await getJson<SermonsPageContent>(API_ENDPOINTS.sermonsPage);
+    if (data?.hero) {
+      // Same /media/... origin fix as the other image mappers (B5.6).
+      return {
+        ...data,
+        hero: { ...data.hero, image: resolveMediaUrl(data.hero.image) },
+      };
+    }
+    return data;
+  } catch {
+    return undefined;
+  }
+}
+
+/* ---------- Partner (Give) page section content (admin-managed) ---------- */
+
+export interface GiveHeroContent {
+  title: string;
+  subtitle: string;
+  scripture: string;
+  register: string;
+  image: string;
+  image_alt: string;
+}
+
+export interface GiveWhyContent {
+  eyebrow: string;
+  heading: string;
+  body: string;
+}
+
+export interface GiveMpesaContent {
+  eyebrow: string;
+  till_number: string;
+  till_caption: string;
+  account_name: string;
+  instructions: string;
+  button_label: string;
+  button_url: string;
+}
+
+export interface GiveAllocationItemContent {
+  id: number;
+  title: string;
+  percentage: string;
+  description: string;
+  image: string;
+  image_alt: string;
+  sort_order: number;
+}
+
+export interface GiveAllocationContent {
+  heading: string;
+  subtitle: string;
+  items: GiveAllocationItemContent[];
+}
+
+export interface GivePageContent {
+  hero: GiveHeroContent | null;
+  why: GiveWhyContent | null;
+  mpesa: GiveMpesaContent | null;
+  allocation: GiveAllocationContent | null;
+}
+
+export async function getGive(): Promise<GivePageContent | undefined> {
+  try {
+    const data = await getJson<GivePageContent>(API_ENDPOINTS.give);
+    const hero = data?.hero
+      ? { ...data.hero, image: resolveMediaUrl(data.hero.image) }
+      : data?.hero ?? null;
+    const items = data?.allocation?.items?.map((item) => ({
+      ...item,
+      image: resolveMediaUrl(item.image),
+    }));
+    const allocation = data?.allocation
+      ? { ...data.allocation, items: items ?? [] }
+      : data?.allocation ?? null;
+    return { ...data, hero, allocation };
+  } catch {
+    return undefined;
+  }
+}
+
+/* ---------- Contact page section content (admin-managed) ---------- */
+
+export interface ContactHeroContent {
+  title: string;
+  subtitle: string;
+  scripture: string;
+  register: string;
+  image: string;
+  image_alt: string;
+}
+
+export interface ContactSocialLinkContent {
+  id: number;
+  network: string;
+  label: string;
+  url: string;
+  sort_order: number;
+}
+
+export interface ContactDetailsContent {
+  email_heading: string;
+  email_address: string;
+  location_heading: string;
+  street: string;
+  city: string;
+  country: string;
+  maps_url: string;
+  directions_label: string;
+  social_heading: string;
+  social_links: ContactSocialLinkContent[];
+}
+
+export interface ContactFormContent {
+  heading: string;
+  name_label: string;
+  email_label: string;
+  phone_label: string;
+  message_label: string;
+  submit_label: string;
+  sending_label: string;
+  success_message: string;
+  error_message: string;
+}
+
+export interface ContactPageContent {
+  hero: ContactHeroContent | null;
+  details: ContactDetailsContent | null;
+  form: ContactFormContent | null;
+}
+
+export async function getContactPage(): Promise<ContactPageContent | undefined> {
+  try {
+    const data = await getJson<ContactPageContent>(API_ENDPOINTS.contactPage);
+    const hero = data?.hero
+      ? { ...data.hero, image: resolveMediaUrl(data.hero.image) }
+      : data?.hero ?? null;
+    return { ...data, hero };
   } catch {
     return undefined;
   }
@@ -412,13 +767,45 @@ export interface HomePageResponse {
   events: EventView[];
   testimonials: TestimonialView[];
   leaders: LeaderView[];
+  pastorProfile: {
+    name: string;
+    title: string;
+    image: string;
+    biography: string;
+    cta_text: string;
+    cta_url: string;
+  } | null;
 }
 
 export { ServiceTime };
 
+/** Normalize raw homepage payload image paths (/media/... → absolute Django/CDN URL).
+ *  Raw dict payloads (hero, pastorProfile, serviceTimes) bypass the typed
+ *  mappers above, so they need the same origin fix — no component edits needed. */
+function normalizeHomepageMedia(data: HomePageResponse): HomePageResponse {
+  const hero = data.hero ? { ...data.hero } : data.hero;
+  if (hero && typeof hero["hero_background_image"] === "string") {
+    hero["hero_background_image"] = resolveMediaUrl(
+      hero["hero_background_image"] as string,
+    );
+  }
+  const pastorProfile = data.pastorProfile ? { ...data.pastorProfile } : null;
+  if (pastorProfile && typeof pastorProfile.image === "string") {
+    pastorProfile.image = resolveMediaUrl(pastorProfile.image);
+  }
+  const serviceTimes = Array.isArray(data.serviceTimes)
+    ? data.serviceTimes.map((s) => ({
+        ...s,
+        image: s.image ? resolveMediaUrl(s.image) : s.image,
+      }))
+    : data.serviceTimes;
+  return { ...data, hero, pastorProfile, serviceTimes };
+}
+
 export async function getHomepage(): Promise<HomePageResponse | undefined> {
   try {
-    return await getJson<HomePageResponse>(API_ENDPOINTS.homepage);
+    const data = await getJson<HomePageResponse>(API_ENDPOINTS.homepage);
+    return normalizeHomepageMedia(data);
   } catch {
     return undefined;
   }
