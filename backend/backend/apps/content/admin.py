@@ -106,6 +106,12 @@ class HomepageGroupedAdminSite(AdminSite):
         ('contact', 'Contact', 'ContactSections', 'content'),
     ]
 
+    # Map an app label to the display name shown in the admin card.
+    APP_LABEL_DISPLAY_NAMES = {
+        'accounts': 'Authentication and Authorization',
+    }
+
+
     # Content components grouped into their page's card (B5.4 v2, updated in
     # B5.5 for About): extracted from their app cards (like HOMEPAGE_GROUP) and
     # listed before the page's Sections toggle — one entry per page section,
@@ -156,6 +162,12 @@ class HomepageGroupedAdminSite(AdminSite):
     def get_app_list(self, request):
         """Return app list with grouped 'Homepage' and per-page sections."""
         original = list(super().get_app_list(request))
+
+        # Rename the accounts app card to "Authentication and Authorization".
+        for app in original:
+            if app['app_label'] in self.APP_LABEL_DISPLAY_NAMES:
+                app['name'] = self.APP_LABEL_DISPLAY_NAMES[app['app_label']]
+
 
         # Build lookup: (app_label, model_name) -> model_dict
         model_lookup = {}

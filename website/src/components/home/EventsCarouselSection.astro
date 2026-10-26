@@ -79,9 +79,7 @@ const { events = [] }: Props = Astro.props;
       gridHTML += `
         <div class="overflow-hidden rounded-2xl bg-card shadow-lg">
           <a href="/events/${current.slug}" class="block w-full">
-            <div class="relative aspect-[16/9] w-full md:aspect-[16/9]">
-              <img src="${current.image}" alt="${current.title}" class="h-full w-full object-cover" />
-            </div>
+            <img src="${current.image}" alt="${current.title}" class="mx-auto max-w-md rounded-xl border border-primary/20 shadow-lg" />
           </a>
           <div class="p-5 text-center md:p-6">
             <p class="text-sm font-medium text-primary">${formatEventDate(current.date)}</p>
@@ -103,9 +101,7 @@ const { events = [] }: Props = Astro.props;
       gridHTML += `
         <div class="overflow-hidden rounded-2xl bg-card shadow-lg">
           <a href="/events/${next.slug}" class="block w-full">
-            <div class="relative aspect-[16/9] w-full md:aspect-[16/9]">
-              <img src="${next.image}" alt="${next.title}" class="h-full w-full object-cover" />
-            </div>
+            <img src="${next.image}" alt="${next.title}" class="mx-auto max-w-md rounded-xl border border-primary/20 shadow-lg" />
           </a>
           <div class="p-5 text-center md:p-6">
             <p class="text-sm font-medium text-primary">${formatEventDate(next.date)}</p>

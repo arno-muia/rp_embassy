@@ -18,11 +18,11 @@ const displayTime = event.endTime
 
 <article class="group card-hover">
   <a href={`/events/${event.id}`} class="block">
-    <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
+    <div class="relative">
       <img
         src={event.image}
         alt={`${event.title} — ${event.categoryLabel} event banner`}
-        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        class="mx-auto max-w-md rounded-xl border border-primary/20 shadow-lg transition-transform duration-500 group-hover:scale-105"
       />
       <!-- Category badge -->
       <span

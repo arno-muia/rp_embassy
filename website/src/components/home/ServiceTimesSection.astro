@@ -47,12 +47,14 @@ const isOnline = first?.platform === "online";
         </div>
 
         <!-- Card Display -->
-        <div id="service-card-container" class="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+        <div id="service-card-container" class="overflow-hidden rounded-2xl bg-card shadow-lg">
           {first && <>
               {first.image && (
-                <div class="relative aspect-[8/3] w-full md:aspect-[7/2]">
-                  <img src={first.image} alt={first.name} class="h-full w-full object-cover" />
-                </div>
+                <img
+                  src={first.image}
+                  alt={first.name}
+                  class="mx-auto max-w-md rounded-xl border border-primary/20 shadow-lg"
+                />
               )}
             <div class="border-t border-border p-5 text-center md:p-6">
               <div class="mb-3">
@@ -120,7 +122,7 @@ const isOnline = first?.platform === "online";
 
     container.innerHTML = ''
       + (current.image
-      ? '<div class="relative aspect-[8/3] w-full md:aspect-[7/2]"><img src="' + current.image + '" alt="' + current.name + '" class="h-full w-full object-cover" /></div>'
+      ? '<img src="' + current.image + '" alt="' + current.name + '" class="mx-auto max-w-md rounded-xl border border-primary/20 shadow-lg" />'
         : '')
       + '<div class="border-t border-border p-5 text-center md:p-6">'
       + '<div class="mb-3">'
