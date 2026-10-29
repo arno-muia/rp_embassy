@@ -2,13 +2,15 @@
 import Layout from "../layouts/Layout.astro";
 import Button from "../components/ui/Button.astro";
 import LeaderCard from "../components/content/LeaderCard.astro";
-import { getAbout, getLeaders } from "../lib/api";
+import { getAbout, getLeaders, getUpNextEvent } from "../lib/api";
+import { formatDayOfWeek } from "../lib/format";
 import { getSections, isEnabled } from "../lib/sections";
 import { site } from "../lib/site";
 
 const about = await getAbout();
 const leaders = await getLeaders();
 const sectionFlags = await getSections();
+const upNextEvent = await getUpNextEvent();
 const on = (key: string) => isEnabled(sectionFlags, "about", key);
 
 // About section content is admin-managed (B5.5) — every component below is
@@ -38,7 +40,17 @@ const themeTitle = about?.theme?.title ?? site.theme2026.title;
 const themeScripture = about?.theme?.scripture ?? site.theme2026.scripture;
 const themeScriptureText = about?.theme?.scripture_text ?? site.theme2026.scriptureText;
 const themeImage = about?.theme?.image ?? site.theme2026.image;
-const themeButtonLabel = about?.theme?.button_label ?? "Join Us";
+const themeButtonLabel = (() => {
+  const DEFAULT_ABOUT_LABEL = "Join Us";
+  const upNextDay = upNextEvent ? formatDayOfWeek(upNextEvent.date) : null;
+  // Respect an admin-customized label; otherwise derive "Join Us this {Day}"
+  // from the upcoming meeting, falling back to the original default.
+  if (about?.theme?.button_label && about.theme.button_label !== DEFAULT_ABOUT_LABEL) {
+    return about.theme.button_label;
+  }
+  if (upNextDay) return `Join Us this ${upNextDay}`;
+  return about?.theme?.button_label ?? DEFAULT_ABOUT_LABEL;
+})();
 const themeButtonUrl = about?.theme?.button_url ?? "/visit";
 
 const president = leaders.find((l) => l.role.toLowerCase().includes("president"));

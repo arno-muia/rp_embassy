@@ -285,6 +285,12 @@ export async function getUpcomingEvents(
   return limit ? upcoming.slice(0, limit) : upcoming;
 }
 
+/** The single next upcoming meeting (event), or undefined if none scheduled. */
+export async function getUpNextEvent(): Promise<EventView | undefined> {
+  const events = await getUpcomingEvents(1);
+  return events[0];
+}
+
 export async function getEventById(
   id: string,
 ): Promise<EventView | undefined> {

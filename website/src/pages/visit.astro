@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/shared/PageHero.astro";
+import ServiceTimesGrid from "../components/shared/ServiceTimesGrid.astro";
 import ServiceTimesCarousel from "../components/shared/ServiceTimesCarousel.astro";
 import FaqAccordion from "../components/content/FaqAccordion.astro";
 import RsvpForm from "../components/forms/RsvpForm.astro";
@@ -9,9 +10,11 @@ import {
   getSiteConfig,
   getHomepage,
   getVisit,
+  getUpNextEvent,
   type VisitExpectContent,
   type VisitFaqsContent,
 } from "../lib/api";
+import { formatDayOfWeek } from "../lib/format";
 import { getSections, isEnabled } from "../lib/sections";
 import { images, site } from "../lib/site";
 
@@ -22,11 +25,12 @@ const iconMap: Record<string, string> = {
   "trending-up": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
 };
 
-const [config, homepage, visit, sectionFlags] = await Promise.all([
+const [config, homepage, visit, sectionFlags, upNextEvent] = await Promise.all([
   getSiteConfig(),
   getHomepage(),
   getVisit(),
   getSections(),
+  getUpNextEvent(),
 ]);
 const on = (key: string) => isEnabled(sectionFlags, "visit", key);
 
@@ -44,7 +48,7 @@ const location = visit?.location ?? {
   eyebrow: "Find Us",
   title: "Visit Us in Thika",
   description:
-    "We meet at Voice of Grace, behind Spoonzoom in Thika. Look for the hospitality team at the entrance — they will guide you to parking and seating.",
+    "We meet at Royal Priesthood Embassy, behind Spoonzoom in Thika. Look for the hospitality team at the entrance — they will guide you to parking and seating.",
   button_label: "Get Directions",
   button_url: site.address.mapsUrl,
   map_embed_url:
@@ -75,12 +79,26 @@ const faqs: VisitFaqsContent = visit?.faqs ?? {
 
 const rsvp = visit?.rsvp ?? null;
 
-const comingSunday = visit?.comingSunday ?? {
-  title: "I Am Coming This Sunday",
-  description: "Questions before you visit? Reach out — we're happy to help.",
-  button_label: "Contact Us",
-  button_url: "#rsvp",
-};
+const comingSunday = (() => {
+  const DEFAULT_COMING_TITLE = "I Am Coming This Sunday";
+  const upNextDay = upNextEvent ? formatDayOfWeek(upNextEvent.date) : null;
+  // Respect an admin-customized title; otherwise derive "I am coming this {Day}"
+  // from the upcoming meeting, falling back to the original default.
+  const title =
+    visit?.comingSunday?.title && visit.comingSunday.title !== DEFAULT_COMING_TITLE
+      ? visit.comingSunday.title
+      : upNextDay
+        ? `I am coming this ${upNextDay}`
+        : visit?.comingSunday?.title ?? DEFAULT_COMING_TITLE;
+  return {
+    title,
+    description:
+      visit?.comingSunday?.description ??
+      "Questions before you visit? Reach out — we're happy to help.",
+    button_label: visit?.comingSunday?.button_label ?? "Contact Us",
+    button_url: visit?.comingSunday?.button_url ?? "#rsvp",
+  };
+})();
 ---
 
 <Layout
@@ -93,7 +111,7 @@ const comingSunday = visit?.comingSunday ?? {
     subtitle={hero.subtitle}
     scripture={hero.scripture || undefined}
     register={
-      (hero.variant as "celestial" | "parchment" | "warm") || "warm"
+      (hero.variant as "celestial" | "parchment" | "warm") || "parchment"
     }
   />
   )}
@@ -110,7 +128,11 @@ const comingSunday = visit?.comingSunday ?? {
             Service Times
           </h2>
         </div>
-        <ServiceTimesCarousel services={homepage.serviceTimes} />
+        {
+          homepage.serviceTimes.length > 4
+            ? <ServiceTimesCarousel services={homepage.serviceTimes} />
+            : <ServiceTimesGrid services={homepage.serviceTimes} />
+        }
         </div>
       </section>
     )

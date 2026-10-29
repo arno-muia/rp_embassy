@@ -31,7 +31,7 @@ const { events = [] }: Props = Astro.props;
       <div data-reveal data-reveal-y="30" data-reveal-duration="0.6">
         <script set:html={`const events = ${JSON.stringify(events)};`}></script>
         <!-- Dual Card Grid -->
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-2" id="events-grid">
+        <div class={`grid gap-8 ${events.length === 1 ? "grid-cols-1 justify-items-center" : "grid-cols-1 md:grid-cols-2"}`} id="events-grid">
           <!-- Cards injected by client script -->
         </div>
 
@@ -119,6 +119,11 @@ const { events = [] }: Props = Astro.props;
     }
     
     grid.innerHTML = gridHTML;
+    // When only a single event is available, center its card and cap its
+    // width so it reads as a lone, centered card (the grid already centers it).
+    if (grid.children.length === 1) {
+      (grid.children[0] as HTMLElement).classList.add("max-w-md");
+    }
   }
 
   function updateDots(index: number) {

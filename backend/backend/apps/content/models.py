@@ -763,7 +763,7 @@ class VisitLocation(models.Model):
     eyebrow = models.CharField(max_length=128, default='Find Us')
     title = models.CharField(max_length=255, default='Visit Us in Thika')
     description = models.TextField(
-        default='We meet at Voice of Grace, behind Spoonzoom in Thika. '
+        default='We meet at Royal Priesthood Embassy, behind Spoonzoom in Thika. '
                 'Look for the hospitality team at the entrance — they will '
                 'guide you to parking and seating.',
     )

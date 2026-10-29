@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('eyebrow', models.CharField(default='Find Us', max_length=128)),
                 ('title', models.CharField(default='Visit Us in Thika', max_length=255)),
-                ('description', models.TextField(default='We meet at Voice of Grace, behind Spoonzoom in Thika. Look for the hospitality team at the entrance — they will guide you to parking and seating.')),
+                ('description', models.TextField(default='We meet at Royal Priesthood Embassy, behind Spoonzoom in Thika. Look for the hospitality team at the entrance — they will guide you to parking and seating.')),
                 ('button_label', models.CharField(default='Get Directions', max_length=64)),
                 ('button_url', models.CharField(default='https://maps.app.goo.gl/PLHU6uvwqJHPG9PD6', max_length=512)),
                 ('map_embed_url', models.CharField(default='https://maps.google.com/maps?q=Voice+of+Grace+Behind+Spoonzoom+Thika+Kenya&output=embed', help_text='iframe src for the embedded Google map.', max_length=1024)),

@@ -1,6 +1,8 @@
 ---
 import Button from "../ui/Button.astro";
 import type { ServiceTime } from "../../lib/api";
+import type { EventView } from "../../types";
+import { formatDayOfWeek } from "../../lib/format";
 
 interface Props {
   serviceTimes?: ServiceTime[];
@@ -14,19 +16,42 @@ interface Props {
     cta_secondary_button_url?: string;
     cta_location?: string;
   };
+  /** Next upcoming meeting (event) — drives the day/time/venue when present. */
+  upcomingEvent?: EventView;
 }
 
-const { serviceTimes, hero } = Astro.props;
+const { serviceTimes, hero, upcomingEvent } = Astro.props;
 
 const firstService = serviceTimes?.[0];
-const heading = hero?.cta_heading || "Join Us This Sunday";
+
+// Day / time / venue are driven by the upcoming meeting (event) when available,
+// falling back to the regular service times. Admin-managed hero text is always
+// respected as an override — only the model-default strings are replaced by the
+// event-derived value (see DEFAULT_* constants below).
+const DEFAULT_HEADING = "Join Us This Sunday";
+const DEFAULT_LOCATION = "Thika, Kenya";
+
+const upNextDay = upcomingEvent ? formatDayOfWeek(upcomingEvent.date) : null;
+const upNextDayUpper = upNextDay ? upNextDay.toUpperCase() : null;
+
+const heading =
+  (hero?.cta_heading && hero.cta_heading !== DEFAULT_HEADING)
+    ? hero.cta_heading
+    : upNextDayUpper
+      ? `JOIN US THIS ${upNextDayUpper}`
+      : hero?.cta_heading || DEFAULT_HEADING;
+
+const venue =
+  (hero?.cta_location && hero.cta_location !== DEFAULT_LOCATION)
+    ? hero.cta_location
+    : upcomingEvent?.location || hero?.cta_location || DEFAULT_LOCATION;
+
 const title = hero?.cta_title || "You're Invited";
 const description = hero?.cta_description || "Whether you are exploring faith, looking for a church home, or have walked with Jesus for years — we have a place for you in Thika.";
 const buttonText = hero?.cta_button_text || "Plan Your Visit";
 const buttonUrl = hero?.cta_button_url || "/visit";
 const secondaryButtonText = hero?.cta_secondary_button_text || "Watch a Sermon";
 const secondaryButtonUrl = hero?.cta_secondary_button_url || "/sermons";
-const location = hero?.cta_location || "Thika, Kenya";
 ---
 
 <section class="section-padding">
@@ -43,9 +68,11 @@ const location = hero?.cta_location || "Thika, Kenya";
       {description}
     </p>
     {
-      firstService && (
+      (upcomingEvent || firstService) && (
         <p class="mt-4 font-data text-primary">
-          {firstService.day} · {firstService.time} · {location}
+          {upcomingEvent
+            ? `${upNextDay} · ${upcomingEvent.time} · ${upcomingEvent.location}`
+            : `${firstService.day} · ${firstService.time} · ${venue}`}
         </p>
       )
     }

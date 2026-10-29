@@ -26,6 +26,14 @@ class EventRepository:
         ).order_by('start_date_time')
 
     @classmethod
+    def published_and_completed(cls):
+        """PUBLISHED (upcoming/ongoing) and COMPLETED events for the public
+        events listing page. Ordered by start date so the soonest appears first."""
+        return ChurchEvent.objects.filter(
+            status__in=['PUBLISHED', 'COMPLETED']
+        ).order_by('start_date_time')
+
+    @classmethod
     def registrations(cls, event_id):
         return EventRegistration.objects.filter(event_id=event_id).select_related('member')
 

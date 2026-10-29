@@ -48,6 +48,13 @@ const displayTime = event.endTime
           </span>
         )
       }
+      {
+        event.status === "past" && (
+          <span class="absolute left-3 bottom-3 rounded-full bg-gold-600 px-3 py-1 text-xs font-semibold text-obsidian-900">
+            Completed
+          </span>
+        )
+      }
     </div>
     <div class="mt-5 space-y-2">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">

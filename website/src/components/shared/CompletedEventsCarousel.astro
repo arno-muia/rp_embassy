@@ -1,0 +1,85 @@
+---
+import type { EventView } from "../../types";
+import EventCard from "../content/EventCard.astro";
+
+interface Props {
+  events: EventView[];
+}
+
+const { events }: Props = Astro.props;
+---
+
+<div data-reveal data-reveal-y="30" data-reveal-duration="0.6">
+  <div class="relative mx-auto max-w-[1050px]">
+    <!-- Horizontal scroll container with snap (mirrors ServiceTimesCarousel) -->
+    <div
+      id="completed-events-carousel"
+      class="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+      style="scrollbar-width: none; -ms-overflow-style: none;"
+    >
+    {events.map((event) => (
+      <div class="flex-shrink-0 w-[300px] snap-start">
+        <EventCard event={event} />
+      </div>
+    ))}
+  </div>
+
+  <!-- Navigation Buttons -->
+  <button
+    id="completed-carousel-prev"
+    class="absolute -left-6 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-white/80"
+    aria-label="Previous"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="text-black"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  </button>
+  <button
+    id="completed-carousel-next"
+    class="absolute -right-6 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-white/80"
+    aria-label="Next"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="text-black"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  </button>
+  </div>
+</div>
+
+<script>
+  const prevBtn = document.getElementById('completed-carousel-prev');
+  const nextBtn = document.getElementById('completed-carousel-next');
+  const carousel = document.getElementById('completed-events-carousel');
+
+  if (prevBtn && nextBtn && carousel) {
+    prevBtn.addEventListener('click', () => {
+      carousel.scrollBy({ left: -332, behavior: 'smooth' });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      carousel.scrollBy({ left: 332, behavior: 'smooth' });
+    });
+  }
+</script>

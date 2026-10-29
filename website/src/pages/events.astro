@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import EventCard from "../components/content/EventCard.astro";
+import CompletedEventsCarousel from "../components/shared/CompletedEventsCarousel.astro";
 import { getEvents } from "../lib/api";
 import { getSections, isEnabled } from "../lib/sections";
 
@@ -12,6 +13,19 @@ const upcoming = allEvents.filter(
   (e) => e.status === "upcoming" || e.status === "ongoing",
 );
 const past = allEvents.filter((e) => e.status === "past");
+
+/** Dynamic grid layout: a single event is centered and width-constrained;
+ *  two events are capped at two columns (no empty third slot) and centered
+ *  in their cells; three or more flow into the full responsive grid.
+ *  Shared by both the Upcoming & Ongoing and Completed Events sections. */
+const gridClass = (count: number) => {
+  if (count === 1) return "grid-cols-1 justify-items-center";
+  if (count === 2) return "grid-cols-1 md:grid-cols-2 justify-items-center";
+  return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+};
+
+const cardWrapperClass = (count: number) =>
+  count === 1 ? "w-full max-w-md" : "flex justify-center";
 ---
 
 <Layout title="Events" description="Upcoming events, outreach, and special gatherings at Royal Priesthood Embassy.">
@@ -29,9 +43,9 @@ const past = allEvents.filter((e) => e.status === "past");
       <h2 class="font-display text-2xl text-foreground text-center">Upcoming & Ongoing</h2>
       {
         upcoming.length > 0 ? (
-          <div class="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div class={`mt-10 grid gap-8 ${gridClass(upcoming.length)}`}>
             {upcoming.map((event) => (
-              <div class="flex justify-center">
+              <div class={cardWrapperClass(upcoming.length)}>
                 <EventCard event={event} />
               </div>
             ))}
@@ -44,20 +58,26 @@ const past = allEvents.filter((e) => e.status === "past");
   </section>
   )}
 
-  {
-    on("past") && past.length > 0 && (
-      <section class="register-parchment section-padding">
-        <div class="mx-auto max-w-7xl px-5 md:px-8">
-          <h2 class="font-display text-2xl text-foreground text-center">Past Events</h2>
-          <div class="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {past.map((event) => (
-              <div class="flex justify-center">
-                <EventCard event={event} />
-              </div>
-            ))}
-          </div>
+  {on("past") && (
+  <section class="register-parchment section-padding">
+    <div class="mx-auto max-w-7xl px-5 md:px-8">
+      <h2 class="font-display text-2xl text-foreground text-center">Completed Events</h2>
+      {past.length > 3 ? (
+        <CompletedEventsCarousel events={past} />
+      ) : past.length > 0 ? (
+        <div class={`mt-10 grid gap-10 ${gridClass(past.length)}`}>
+          {past.map((event) => (
+            <div class={cardWrapperClass(past.length)}>
+              <EventCard event={event} />
+            </div>
+          ))}
         </div>
-      </section>
-    )
-  }
+      ) : (
+        <p class="mt-6 text-muted-foreground text-center">
+          No completed events yet.
+        </p>
+      )}
+    </div>
+  </section>
+  )}
 </Layout>

@@ -9,7 +9,7 @@ from .serializers import ChurchEventReadSerializer
 
 
 class EventViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = EventRepository.published_upcoming()
+    queryset = EventRepository.published_and_completed()
     serializer_class = ChurchEventReadSerializer
     lookup_field = 'id'
     permission_classes = [AllowAny]

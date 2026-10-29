@@ -33,3 +33,11 @@ export function leaderInitials(name: string): string {
     .join("")
     .toUpperCase();
 }
+
+/** Capitalized weekday name from an ISO date string (e.g. "Saturday").
+ *  Uses the en-US locale so the result matches the rest of the site. */
+export function formatDayOfWeek(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    weekday: "long",
+  });
+}

@@ -10,7 +10,7 @@ export const site = {
   description:
     "Join Royal Priesthood Embassy in Thika, Kenya. A Kingdom Embassy where you are equipped to establish heaven on earth through worship, discipleship, and authentic relationships.",
   address: {
-    street: "Voice of Grace, Behind Spoonzoom",
+    street: "Royal Priesthood Embassy, Behind Spoonzoom",
     city: "Thika",
     country: "Kenya",
     mapsUrl: "https://maps.app.goo.gl/PLHU6uvwqJHPG9PD6",

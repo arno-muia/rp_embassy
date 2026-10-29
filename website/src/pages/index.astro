@@ -25,7 +25,7 @@ const [config, homepage, sectionFlags] = await Promise.all([
 ]);
 const on = (key: string) => isEnabled(sectionFlags, "homepage", key);
 const [events, latestSermon, testimonials] = await Promise.all([
-  getUpcomingEvents(5),
+  getUpcomingEvents(2),
   getLatestSermon(),
   getTestimonials(),
 ]);
@@ -94,5 +94,5 @@ const sermonThumbnail = latestSermon?.thumbnail ?? "";
   <!-- Pastor Section -->
   {on("pastor-profile") && <PastorSection pastorProfile={homepage?.pastorProfile} />}
 
-  {on("cta-banner") && <CtaBannerSection serviceTimes={homepage?.serviceTimes} hero={homepage?.hero} />}
+  {on("cta-banner") && <CtaBannerSection serviceTimes={homepage?.serviceTimes} hero={homepage?.hero} upcomingEvent={events[0]} />}
 </Layout>
